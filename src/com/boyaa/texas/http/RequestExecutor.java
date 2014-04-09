@@ -9,6 +9,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import android.app.Dialog;
+import android.net.http.AndroidHttpClient;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -17,6 +19,17 @@ public class RequestExecutor {
 	private static final int CORE_POOL_SIZE = 5;
     private static final int MAXIMUM_POOL_SIZE = 128;
     private static final int KEEP_ALIVE = 1;
+    
+    private final static HttpWorker mWorker;
+    static {
+    	if (Build.VERSION.SDK_INT >= 9) {
+			mWorker = new HurlWorker();
+        } else {
+            // Prior to Gingerbread, HttpUrlConnection was unreliable.
+            // See: http://android-developers.blogspot.com/2011/09/androids-http-clients.html
+        	mWorker = new HttpClientWorker(AndroidHttpClient.newInstance("android"));
+        }
+    }
     
 	private static final ThreadFactory sThreadFactory = new ThreadFactory() {
 		private final AtomicInteger mCount = new AtomicInteger(1);
@@ -38,9 +51,8 @@ public class RequestExecutor {
 	
 	public static void execute(Request<?> request, boolean showProgressBar) {
 		request.dialog = dialog;
-		HttpTask task = new HttpTask(request, mPoster);
-//		if (showProgressBar)
-//			dialog.show();
+		HttpTask task = new HttpTask(request, mPoster, mWorker);
 		THREAD_POOL_EXECUTOR.execute(task);
 	}
+	
 }

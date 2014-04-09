@@ -13,5 +13,12 @@ public class Error {
 		errorCode = code;
 		errorDescription = des;
 	}
+
+	@Override
+	public String toString() {
+		return "Error [errorDescription=" + errorDescription + ", errorCode=" + errorCode + "]";
+	}
+	
+	
 	
 }

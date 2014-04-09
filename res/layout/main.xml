@@ -5,13 +5,34 @@
     android:orientation="vertical"
     tools:context=".MainActivity" >
 
-    <TextView
+    <Button
+        android:id="@+id/stringRequest"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/hello_world" />
-
-    <EditText
+        android:onClick="onClickButton"
+        android:text="string request" />
+    
+    <Button
+        android:id="@+id/pojoRequest"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
+        android:layout_height="wrap_content"
+        android:onClick="onClickButton"
+        android:text="pojo request" />
+    <Button
+        android:id="@+id/bitmapRequest"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="onClickButton"
+        android:text="bitmap request" />
+    <Button
+        android:id="@+id/fileRequest"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="onClickButton"
+        android:text="file request" />
+    <ImageView 
+        android:id="@+id/image"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+    
 </LinearLayout>

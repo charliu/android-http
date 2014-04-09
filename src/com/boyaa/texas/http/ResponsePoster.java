@@ -40,7 +40,6 @@ public class ResponsePoster {
 				mRequest.dispatchError(mResponse.error);
 			}
 		}
-
 	}
 
 }

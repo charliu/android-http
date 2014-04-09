@@ -23,11 +23,6 @@ public class HttpTask implements Runnable {
 		this(request, poster, new ByteArrayPool(DEFAULT_POOL_SIZE), worker);
 	}
 
-	public HttpTask(Request<?> request, ResponsePoster poster) {
-		this(request, poster, new ByteArrayPool(DEFAULT_POOL_SIZE), new HttpClientWorker(
-				AndroidHttpClient.newInstance("volley/0")));
-	}
-	
 
 	public HttpTask(Request<?> req, ResponsePoster poster, ByteArrayPool pool, HttpWorker worker) {
 		request = req;
@@ -36,10 +31,6 @@ public class HttpTask implements Runnable {
 		httpWork = worker;
 	}
 	
-	private HttpWorker getHttpWorkerBySDK() {
-		//TODO
-		return null;
-	}
 
 	@Override
 	public void run() {

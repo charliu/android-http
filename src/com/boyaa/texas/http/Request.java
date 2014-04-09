@@ -2,6 +2,7 @@ package com.boyaa.texas.http;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.Collections;
 import java.util.Map;
 
 import android.app.Dialog;
@@ -63,7 +64,7 @@ public abstract class Request<T> {
 	}
 
 	public Map<String, String> getHeaders() {
-		return mHeader;
+		return Collections.emptyMap();
 	}
 
 	public void setHeaders(Map<String, String> mHeader) {
