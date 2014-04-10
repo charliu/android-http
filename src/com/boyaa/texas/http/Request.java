@@ -16,7 +16,16 @@ public abstract class Request<T> {
 	protected final ResponseHandler<T> mResponseHandler;
 	public int mMethod = RequestMethod.GET;
 	public Dialog dialog;
+	private boolean abort = false;
 	
+	public boolean isAbort() {
+		return abort;
+	}
+
+	public void setAbort(boolean abort) {
+		this.abort = abort;
+	}
+
 	private int socketTimeoutMs = 30000;
 	
 	private static String DEFAULT_PARAMS_ENCODING = "UTF-8";
@@ -25,7 +34,7 @@ public abstract class Request<T> {
 		int GET = 1;
 		int POST = 2;
 	}
-
+	
 	public Request(String url, Map<String, String> header, Map<String, String> params,
 			ResponseHandler<T> handler) {
 		this.mUrl = url;

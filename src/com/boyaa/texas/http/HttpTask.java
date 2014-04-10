@@ -3,12 +3,12 @@ package com.boyaa.texas.http;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 
-import android.net.http.AndroidHttpClient;
 import android.util.Log;
 
 public class HttpTask implements Runnable {
@@ -43,6 +43,7 @@ public class HttpTask implements Runnable {
 			if (statusCode == HttpStatus.SC_OK) {
 				if (httpResponse.getEntity() != null) {
 					byte[] data = entityToBytes(httpResponse.getEntity());
+					printAllHeaders(httpResponse.getAllHeaders());
 					response = request.parseResponse(data);
 				}
 			} else {
@@ -57,6 +58,12 @@ public class HttpTask implements Runnable {
 			}
 		}
 		mPoster.dispatchResponse(request, response);
+	}
+	
+	private void printAllHeaders(Header[] headers) {
+		for (Header header : headers) {
+			Log.v("HEADER", header.getName() + " : " + header.getValue());
+		}
 	}
 
 	private byte[] entityToBytes(HttpEntity entity) throws IOException {

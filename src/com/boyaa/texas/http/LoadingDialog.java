@@ -21,7 +21,6 @@ public class LoadingDialog extends Dialog {
 
 	protected LoadingDialog(Context context, boolean cancelable, OnCancelListener cancelListener) {
 		super(context, cancelable, cancelListener);
-		// TODO Auto-generated constructor stub
 	}
 
 	public LoadingDialog(Context context) {

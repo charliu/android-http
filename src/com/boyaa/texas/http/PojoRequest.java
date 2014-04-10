@@ -28,7 +28,7 @@ public class PojoRequest<T extends Pojo> extends Request<T>{
 			e.printStackTrace();
 		}
 		
-		return Response.error(new Error(Error.DATA_PARSE_ERROR, "parse error"));
+		return Response.error(new Error(Error.PARSE_ERROR, "parse error"));
 	}
 
 }

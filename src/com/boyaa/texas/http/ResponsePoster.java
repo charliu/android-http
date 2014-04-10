@@ -34,6 +34,9 @@ public class ResponsePoster {
 		@SuppressWarnings("unchecked")
 		@Override
 		public void run() {
+			if (mRequest.dialog != null && mRequest.dialog.isShowing()) {
+				mRequest.dialog.dismiss();
+			}
 			if (mResponse.error == null) {
 				mRequest.dispatchResponse(mResponse.result);
 			} else {

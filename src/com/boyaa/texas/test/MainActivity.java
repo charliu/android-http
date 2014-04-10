@@ -1,7 +1,8 @@
 package com.boyaa.texas.test;
 
 
-import com.boyaa.texas.http.BitmapRequest;
+import com.boyaa.texas.http.ImageLoader;
+import com.boyaa.texas.http.ImageLruCache;
 import com.boyaa.texas.http.PojoRequest;
 import com.boyaa.texas.http.Response.ResponseHandler;
 import com.boyaa.texas.http.Error;
@@ -9,11 +10,10 @@ import com.boyaa.texas.http.R;
 import com.boyaa.texas.http.RequestExecutor;
 import com.boyaa.texas.http.StringRequest;
 
-import android.net.http.AndroidHttpClient;
 import android.os.Bundle;
 import android.app.Activity;
+import android.content.Intent;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -40,6 +40,8 @@ public class MainActivity extends Activity {
 			bitmapRequest();
 			break;
 		case R.id.fileRequest:
+			Intent intent = new Intent(MainActivity.this, ListViewTest.class);
+			startActivity(intent);
 			break;
 		}
 	}
@@ -58,7 +60,7 @@ public class MainActivity extends Activity {
 				
 			}
 		});
-		RequestExecutor.execute(request, true);
+		RequestExecutor.execute(this, request, true);
 	}
 	
 	private void pojoRequest() {
@@ -76,65 +78,50 @@ public class MainActivity extends Activity {
 				Toast.makeText(MainActivity.this, "text:" + e.toString(), 1).show();
 			}
 		}, TestPojo.class);
-		RequestExecutor.execute(request, true);
+		RequestExecutor.execute(request);
 	}
+	
+	ImageLoader loader = new ImageLoader(new ImageLruCache());
 	
 	private void bitmapRequest() {
 		String url = "http://h.hiphotos.baidu.com/image/w%3D2048/sign=ae39fc65544e9258a63481eea8bad158/4610b912c8fcc3ce64e7dd329045d688d43f208f.jpg";
-		BitmapRequest request = new BitmapRequest(url, null,null, new ResponseHandler<Bitmap>() {
-			@Override
-			public void onSuccess(Bitmap response) {
-				image.setImageBitmap(response);
-			}
-
-			@Override
-			public void onError(Error e) {
-				Toast.makeText(MainActivity.this, "text:" + e.toString(), 1).show();
-			}
-		});
-		RequestExecutor.execute(request, true);
+		loader.load(url, ImageLoader.getImageHandler(image, R.drawable.ic_launcher, 0));
 	}
 	
 	
 
 	@Override
 	protected void onStart() {
-		// TODO Auto-generated method stub
 		super.onStart();
 		Log.v("xxxxxxxxxx", "onStart");
 	}
 
 	@Override
 	protected void onRestart() {
-		// TODO Auto-generated method stub
 		super.onRestart();
 		Log.v("xxxxxxxxxx", "onRestart");
 	}
 
 	@Override
 	protected void onResume() {
-		// TODO Auto-generated method stub
 		super.onResume();
 		Log.v("xxxxxxxxxx", "onResume");
 	}
 
 	@Override
 	protected void onPause() {
-		// TODO Auto-generated method stub
 		super.onPause();
 		Log.v("xxxxxxxxxx", "onPause");
 	}
 
 	@Override
 	protected void onStop() {
-		// TODO Auto-generated method stub
 		super.onStop();
 		Log.v("xxxxxxxxxx", "onStop");
 	}
 
 	@Override
 	protected void onDestroy() {
-		// TODO Auto-generated method stub
 		super.onDestroy();
 		Log.v("xxxxxxxxxx", "onDestroy");
 	}
@@ -149,12 +136,7 @@ public class MainActivity extends Activity {
 
 	@Override
 	public void onWindowFocusChanged(boolean hasFocus) {
-		// TODO Auto-generated method stub
 		super.onWindowFocusChanged(hasFocus);
 		Log.v("xxxxxxxxxx", "onWindowFocusChanged");
 	}
-	
-	
-	
-
 }
