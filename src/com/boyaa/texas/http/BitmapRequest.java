@@ -18,6 +18,8 @@ public class BitmapRequest extends Request<Bitmap>{
 		super(url, null, null, handler);
 	}
 	
+	public Bitmap mResponse;
+	
 	@Override
 	public Response<Bitmap> parseResponse(byte[] data) {
 		Options options = new Options();

@@ -7,7 +7,7 @@ import com.boyaa.texas.http.PojoRequest;
 import com.boyaa.texas.http.Response.ResponseHandler;
 import com.boyaa.texas.http.Error;
 import com.boyaa.texas.http.R;
-import com.boyaa.texas.http.RequestExecutor;
+import com.boyaa.texas.http.HttpExecutor;
 import com.boyaa.texas.http.StringRequest;
 
 import android.os.Bundle;
@@ -60,7 +60,7 @@ public class MainActivity extends Activity {
 				
 			}
 		});
-		RequestExecutor.execute(this, request, true);
+		HttpExecutor.execute(this, request, true);
 	}
 	
 	private void pojoRequest() {
@@ -78,14 +78,14 @@ public class MainActivity extends Activity {
 				Toast.makeText(MainActivity.this, "text:" + e.toString(), 1).show();
 			}
 		}, TestPojo.class);
-		RequestExecutor.execute(request);
+		HttpExecutor.execute(request);
 	}
 	
 	ImageLoader loader = new ImageLoader(new ImageLruCache());
 	
 	private void bitmapRequest() {
 		String url = "http://h.hiphotos.baidu.com/image/w%3D2048/sign=ae39fc65544e9258a63481eea8bad158/4610b912c8fcc3ce64e7dd329045d688d43f208f.jpg";
-		loader.load(url, ImageLoader.getImageHandler(image, R.drawable.ic_launcher, 0));
+		loader.load(url, image, R.drawable.ic_launcher);
 	}
 	
 	

@@ -16,14 +16,14 @@ public abstract class Request<T> {
 	protected final ResponseHandler<T> mResponseHandler;
 	public int mMethod = RequestMethod.GET;
 	public Dialog dialog;
-	private boolean abort = false;
+	private boolean cancel = false;
 	
-	public boolean isAbort() {
-		return abort;
+	public boolean isCancle() {
+		return cancel;
 	}
 
-	public void setAbort(boolean abort) {
-		this.abort = abort;
+	public void cancel() {
+		cancel = true;
 	}
 
 	private int socketTimeoutMs = 30000;
