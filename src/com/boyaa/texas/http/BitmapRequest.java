@@ -13,6 +13,10 @@ public class BitmapRequest extends Request<Bitmap> {
 
 	private Config mConfig;
 
+	public BitmapRequest(String url) {
+		super(url, null, null, null);
+	}
+	
 	public BitmapRequest(String url, ResponseHandler<Bitmap> handler) {
 		super(url, null, null, handler);
 	}
