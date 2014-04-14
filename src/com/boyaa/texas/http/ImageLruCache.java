@@ -1,11 +1,9 @@
 package com.boyaa.texas.http;
 
-import com.boyaa.texas.http.ImageLoader.ImageCache;
-
 import android.graphics.Bitmap;
 import android.support.v4.util.LruCache;
 
-public class ImageLruCache implements ImageCache {
+public class ImageLruCache implements Cache<Bitmap> {
 	private final LruCache<String, Bitmap> bitmapCache;
 	
 	private static final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
@@ -41,6 +39,11 @@ public class ImageLruCache implements ImageCache {
 		protected int sizeOf(String key, Bitmap bitmap) {
 			return (bitmap.getRowBytes() * bitmap.getHeight()) / 1024;
 		}
+	}
+
+	@Override
+	public void init() {
+		
 	}
 	
 }

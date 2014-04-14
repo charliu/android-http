@@ -2,15 +2,11 @@ package com.boyaa.texas.test;
 
 import java.util.List;
 
-import com.android.volley.toolbox.ImageLoader;
-import com.android.volley.toolbox.ImageLoader.ImageCache;
-import com.android.volley.toolbox.Volley;
+import com.boyaa.texas.http.ImageLoader;
 import com.boyaa.texas.http.ImageLruCache;
 import com.boyaa.texas.http.R;
-import com.boyaa.texas.http.ImageLoader.ImageWrapper;
 
 import android.app.Activity;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,7 +19,7 @@ import android.widget.TextView;
 public class ListViewTest extends Activity {
 	private ListView listView;
 
-	// private ImageLoader loader = new ImageLoader(new ImageLruCache());
+	 private ImageLoader loader = new ImageLoader(new ImageLruCache());
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -35,11 +31,9 @@ public class ListViewTest extends Activity {
 
 	private class MyAdapter extends BaseAdapter {
 		private List<String> urls;
-		private ImageLoader loader;
 
 		private MyAdapter(List<String> list) {
 			urls = list;
-			loader = new ImageLoader(Volley.newRequestQueue(ListViewTest.this), new IMCache());
 		};
 
 		@Override
@@ -70,10 +64,8 @@ public class ListViewTest extends Activity {
 				holder = (ViewHolder) convertView.getTag();
 			}
 			String requestUrl = urls.get(position);
-			loader.get(requestUrl, ImageLoader.getImageListener(holder.image, R.drawable.ic_launcher, 0));
-			// loader.get(urls.get(position),
-			// ImageLoader.getImageListener(holder.image,
-			// R.drawable.ic_launcher, 0));
+			loader.load(requestUrl, holder.image);
+			
 			holder.text.setText("hello world " + position);
 			return convertView;
 		}
@@ -81,21 +73,6 @@ public class ListViewTest extends Activity {
 		class ViewHolder {
 			ImageView image;
 			TextView text;
-		}
-
-	}
-
-	private class IMCache implements ImageCache {
-		ImageLruCache cache = new ImageLruCache();
-
-		@Override
-		public Bitmap getBitmap(String url) {
-			return cache.get(url);
-		}
-
-		@Override
-		public void putBitmap(String url, Bitmap bitmap) {
-			cache.put(url, bitmap);
 		}
 
 	}
