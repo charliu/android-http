@@ -26,7 +26,7 @@ public abstract class Request<T> {
 	public Dialog dialog;
 	private boolean cancel = false;
 
-	public boolean isCancle() {
+	public boolean isCancled() {
 		return cancel;
 	}
 

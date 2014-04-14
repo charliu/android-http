@@ -11,7 +11,7 @@ import org.apache.http.StatusLine;
 import android.util.Log;
 
 /**
- * Http 请求任务
+ * Http 请求任务 
  * 
  * @author HuiLiu
  * 
@@ -44,7 +44,7 @@ public class HttpTask implements Runnable {
 			tryTimes++;
 			HttpResponse httpResponse = null;
 			try {
-				if (isInterrupted()) {
+				if (isInterrupted() || request.isCancled()) {
 					return;
 				}
 				httpResponse = httpWork.doHttpRquest(request);
@@ -64,7 +64,9 @@ public class HttpTask implements Runnable {
 				response = Response.error(new Error(Error.NETWORK_ERROR, "network error"));
 			}
 		}
-		mPoster.dispatchResponse(request, response);
+		if (!request.isCancled()) {
+			mPoster.dispatchResponse(request, response);
+		}
 	}
 
 	private boolean isInterrupted() {

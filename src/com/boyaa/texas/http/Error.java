@@ -1,7 +1,6 @@
 package com.boyaa.texas.http;
 
-@SuppressWarnings("serial")
-public class Error extends Exception {
+public class Error {
 	public static final int NETWORK_ERROR = 1;
 	public static final int SERVER_ERROR = 2;
 	public static final int PARSE_ERROR = 3;
@@ -11,12 +10,10 @@ public class Error extends Exception {
 	public int errorCode;
 
 	public Error(int code) {
-		errorCode = code;
-		errorDescription = "";
+		this(code, "");
 	}
 
 	public Error(int code, String des) {
-		super(des);
 		errorCode = code;
 		errorDescription = des;
 	}

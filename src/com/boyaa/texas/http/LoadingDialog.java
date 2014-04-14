@@ -8,6 +8,11 @@ import android.content.Context;
 import android.view.WindowManager.LayoutParams;
 import android.widget.ProgressBar;
 
+/**
+ * 正在加载 Dialog
+ * @author HuiLiu
+ *
+ */
 public class LoadingDialog extends Dialog {
 	public LoadingDialog(Context context, int theme) {
 		super(context, theme);

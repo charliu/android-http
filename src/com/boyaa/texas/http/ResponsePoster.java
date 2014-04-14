@@ -4,6 +4,11 @@ import java.util.concurrent.Executor;
 
 import android.os.Handler;
 
+/**
+ * 请求返回结果转发
+ * @author HuiLiu
+ *
+ */
 public class ResponsePoster {
 	private final Executor responsePoster;
 
