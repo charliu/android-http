@@ -1,5 +1,11 @@
 package com.boyaa.texas.http;
 
+/**
+ * 返回数据
+ * @author HuiLiu
+ *
+ * @param <T> 返回数据类型
+ */
 public class Response<T> {
 	public final T result;
 	public final Error error;

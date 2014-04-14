@@ -3,7 +3,6 @@ package com.boyaa.texas.http;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -11,6 +10,11 @@ import org.apache.http.StatusLine;
 
 import android.util.Log;
 
+/**
+ * Http 请求任务
+ * @author HuiLiu
+ *
+ */
 public class HttpTask implements Runnable {
 
 	private static int DEFAULT_POOL_SIZE = 4096;
@@ -23,14 +27,12 @@ public class HttpTask implements Runnable {
 		this(request, poster, new ByteArrayPool(DEFAULT_POOL_SIZE), worker);
 	}
 
-
 	public HttpTask(Request<?> req, ResponsePoster poster, ByteArrayPool pool, HttpWorker worker) {
 		request = req;
 		mPool = pool;
 		mPoster = poster;
 		httpWork = worker;
 	}
-	
 
 	@Override
 	public void run() {
@@ -43,11 +45,10 @@ public class HttpTask implements Runnable {
 			if (statusCode == HttpStatus.SC_OK) {
 				if (httpResponse.getEntity() != null) {
 					byte[] data = entityToBytes(httpResponse.getEntity());
-					printAllHeaders(httpResponse.getAllHeaders());
 					response = request.parseResponse(data);
 				}
 			} else {
-				response = Response.error(new Error(statusCode, ""));
+				response = Response.error(new Error(statusCode, "network error"));
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -58,12 +59,6 @@ public class HttpTask implements Runnable {
 			}
 		}
 		mPoster.dispatchResponse(request, response);
-	}
-	
-	private void printAllHeaders(Header[] headers) {
-		for (Header header : headers) {
-			Log.v("HEADER", header.getName() + " : " + header.getValue());
-		}
 	}
 
 	private byte[] entityToBytes(HttpEntity entity) throws IOException {
