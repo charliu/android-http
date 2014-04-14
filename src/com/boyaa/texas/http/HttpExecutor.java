@@ -57,6 +57,7 @@ public class HttpExecutor {
 		THREAD_POOL_EXECUTOR.execute(task);
 	}
 	
+	
 	public static void execute(Context context, Request<?> request, boolean showProgressBar) {
 		request.dialog = createLoadingDialog(context, request);
 		HttpTask task = new HttpTask(request, mPoster, mWorker);

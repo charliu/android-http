@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import com.boyaa.texas.http.Response.ResponseHandler;
 
+import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.os.Looper;
 import android.text.TextUtils;
@@ -15,6 +16,7 @@ public class ImageLoader {
 
 	private Cache<Bitmap> imageCache;
 
+	@SuppressLint("UseSparseArrays")
 	private final Map<Integer, String> cacheKeysForImageViewWrapper = Collections
 			.synchronizedMap(new HashMap<Integer, String>());
 
@@ -51,7 +53,7 @@ public class ImageLoader {
 	public void load(final String url, final ImageViewWrapper imageWrapper, final ImageLoadListener listener) {
 		throwIfNotInMainThread();
 
-		final String cacheKey = CacheKeyUtil.generateCacheKey(url);
+		final String cacheKey = CacheKeyUtil.generate(url);
 
 		if (TextUtils.isEmpty(url))
 			return;
@@ -89,6 +91,7 @@ public class ImageLoader {
 			public void onError(Error error) {
 				mInFlightRequests.remove(cacheKey);
 				cancelDisplayTaskFor(imageWrapper);
+				listener.onError(error);
 			}
 		});
 		mInFlightRequests.put(cacheKey, request);
@@ -103,7 +106,6 @@ public class ImageLoader {
 	 * @param memoryCacheKey
 	 */
 	void prepareDisplayTaskFor(ImageViewWrapper wrapper, String memoryCacheKey) {
-		Log.d("HTTP", "add to map");
 		cacheKeysForImageViewWrapper.put(wrapper.getId(), memoryCacheKey);
 	}
 

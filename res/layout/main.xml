@@ -25,11 +25,11 @@
         android:onClick="onClickButton"
         android:text="bitmap request" />
     <Button
-        android:id="@+id/fileRequest"
+        android:id="@+id/img_list_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:onClick="onClickButton"
-        android:text="file request" />
+        android:text="img_list_view" />
     <ImageView 
         android:id="@+id/image"
         android:layout_width="wrap_content"

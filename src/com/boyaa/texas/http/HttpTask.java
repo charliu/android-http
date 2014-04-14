@@ -12,8 +12,9 @@ import android.util.Log;
 
 /**
  * Http 请求任务
+ * 
  * @author HuiLiu
- *
+ * 
  */
 public class HttpTask implements Runnable {
 
@@ -22,6 +23,7 @@ public class HttpTask implements Runnable {
 	private final HttpWorker httpWork;
 	private ByteArrayPool mPool;
 	private ResponsePoster mPoster;
+	private static final int MAX_RETRY_COUNT = 2;
 
 	public HttpTask(Request<?> request, ResponsePoster poster, HttpWorker worker) {
 		this(request, poster, new ByteArrayPool(DEFAULT_POOL_SIZE), worker);
@@ -36,29 +38,37 @@ public class HttpTask implements Runnable {
 
 	@Override
 	public void run() {
-		HttpResponse httpResponse = null;
+		int tryTimes = 0;
 		Response<?> response = null;
-		try {
-			httpResponse = httpWork.doHttpRquest(request);
-			StatusLine statusLine = httpResponse.getStatusLine();
-			int statusCode = statusLine.getStatusCode();
-			if (statusCode == HttpStatus.SC_OK) {
-				if (httpResponse.getEntity() != null) {
-					byte[] data = entityToBytes(httpResponse.getEntity());
-					response = request.parseResponse(data);
+		while (tryTimes < MAX_RETRY_COUNT) {
+			tryTimes++;
+			HttpResponse httpResponse = null;
+			try {
+				if (isInterrupted()) {
+					return;
 				}
-			} else {
-				response = Response.error(new Error(statusCode, "network error"));
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-			response = Response.error(new Error(Error.NETWORK_ERROR, "network error"));
-		} finally {
-			if (response == null) {
-				response = Response.error(new Error(Error.UNKNOWN_ERROR, "unknown error"));
+				httpResponse = httpWork.doHttpRquest(request);
+				StatusLine statusLine = httpResponse.getStatusLine();
+				int statusCode = statusLine.getStatusCode();
+				if (statusCode == HttpStatus.SC_OK) {
+					if (httpResponse.getEntity() != null) {
+						byte[] data = entityToBytes(httpResponse.getEntity());
+						response = request.parseResponse(data);
+						break;
+					}
+				} else {
+					response = Response.error(new Error(statusCode, "not SC_OK error"));
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+				response = Response.error(new Error(Error.NETWORK_ERROR, "network error"));
 			}
 		}
 		mPoster.dispatchResponse(request, response);
+	}
+
+	private boolean isInterrupted() {
+		return Thread.interrupted();
 	}
 
 	private byte[] entityToBytes(HttpEntity entity) throws IOException {
