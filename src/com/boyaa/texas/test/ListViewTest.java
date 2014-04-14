@@ -26,7 +26,7 @@ public class ListViewTest extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.list);
 		listView = (ListView) findViewById(R.id.list_view);
-		listView.setAdapter(new MyAdapter(ImgUrls.getBig(30)));
+		listView.setAdapter(new MyAdapter(ImgUrls.getSmall(80)));
 	}
 
 	private class MyAdapter extends BaseAdapter {

@@ -28,8 +28,7 @@ public class HttpExecutor {
 			mWorker = new HurlWorker();
 		} else {
 			// Prior to Gingerbread, HttpUrlConnection was unreliable.
-			// See:
-			// http://android-developers.blogspot.com/2011/09/androids-http-clients.html
+			// See: http://android-developers.blogspot.com/2011/09/androids-http-clients.html
 			mWorker = new HttpClientWorker(AndroidHttpClient.newInstance("android"));
 		}
 	}
@@ -39,6 +38,7 @@ public class HttpExecutor {
 
 		public Thread newThread(Runnable r) {
 			Thread thread = new Thread(r, "HttpRquest task #" + mCount.getAndIncrement());
+			thread.setPriority(Thread.NORM_PRIORITY - 2);
 			return thread;
 		}
 	};
