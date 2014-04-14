@@ -19,14 +19,14 @@ import android.widget.TextView;
 public class ListViewTest extends Activity {
 	private ListView listView;
 
-	 private ImageLoader loader = new ImageLoader(new ImageLruCache());
+	 private ImageLoader loader = ImageLoader.getInstance(new ImageLruCache());
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.list);
 		listView = (ListView) findViewById(R.id.list_view);
-		listView.setAdapter(new MyAdapter(ImgUrls.getSmall(80)));
+		listView.setAdapter(new MyAdapter(ImgUrls.getBig(80)));
 	}
 
 	private class MyAdapter extends BaseAdapter {
@@ -64,7 +64,7 @@ public class ListViewTest extends Activity {
 				holder = (ViewHolder) convertView.getTag();
 			}
 			String requestUrl = urls.get(position);
-			loader.load(requestUrl, holder.image);
+			loader.load(requestUrl, holder.image, R.drawable.ic_launcher, R.drawable.error96);
 			
 			holder.text.setText("hello world " + position);
 			return convertView;

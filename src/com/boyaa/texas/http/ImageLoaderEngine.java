@@ -6,13 +6,14 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
-
+import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.Looper;
@@ -29,29 +30,35 @@ public class ImageLoaderEngine {
 		private final AtomicInteger mCount = new AtomicInteger(1);
 
 		public Thread newThread(Runnable r) {
-			Thread thread = new Thread(r, "HttpRquest task #" + mCount.getAndIncrement());
+			Thread thread = new Thread(r, "ImageLoader thread #" + mCount.getAndIncrement());
 			thread.setPriority(Thread.NORM_PRIORITY - 2);
 			return thread;
 		}
 	};
 
+	@SuppressLint("UseSparseArrays")
 	private final Map<Integer, String> cacheKeysForImageViewWrapper = Collections
 			.synchronizedMap(new HashMap<Integer, String>());
 
 	private final BlockingQueue<Runnable> sPoolWorkQueue = new LinkedBlockingQueue<Runnable>(10);
-	public final Executor THREAD_POOL_EXECUTOR = new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE, KEEP_ALIVE,
+	private final Executor THREAD_POOL_EXECUTOR = new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE, KEEP_ALIVE,
 			TimeUnit.SECONDS, sPoolWorkQueue, sThreadFactory);
+	private final Executor taskDistributor = Executors.newCachedThreadPool();
 
 	private final Map<String, ReentrantLock> uriLocks = new WeakHashMap<String, ReentrantLock>();
-
-	private final HashMap<String, BitmapRequest> mInFlightRequests = new HashMap<String, BitmapRequest>();
 
 	public ImageLoaderEngine(Cache<Bitmap> cache) {
 		this.imageCache = cache;
 	}
 
-	public void submit(Runnable task) {
-		THREAD_POOL_EXECUTOR.execute(task);
+	public void submit(final Runnable task) {
+		taskDistributor.execute(new Runnable() {
+			@Override
+			public void run() {
+				THREAD_POOL_EXECUTOR.execute(task);
+			}
+		});
+
 	}
 
 	public void post(Runnable runnable) {

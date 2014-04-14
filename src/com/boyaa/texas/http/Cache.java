@@ -4,12 +4,17 @@ package com.boyaa.texas.http;
  * 
  * @author charliu
  *
- * @param <T> 缓存对象
+ * @param <T>
+ *            缓存对象
  */
-public interface Cache<T> {
-	void init();
-	
-	void put(String cacheKey, T value);
+public abstract class Cache<T> {
+	public Cache() {
+		init();
+	}
 
-	T get(String cacheKey);
+	abstract void init();
+
+	abstract void put(String cacheKey, T value);
+
+	abstract T get(String cacheKey);
 }

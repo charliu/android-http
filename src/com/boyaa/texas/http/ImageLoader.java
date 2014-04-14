@@ -1,14 +1,6 @@
 package com.boyaa.texas.http;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import com.boyaa.texas.http.Response.ResponseHandler;
-
-import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
-import android.net.http.AndroidHttpClient;
-import android.os.Build;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
@@ -16,31 +8,26 @@ import android.widget.ImageView;
 
 public class ImageLoader {
 
-	private Cache<Bitmap> imageCache;
+	private ImageLoaderEngine engine;
 
-	@SuppressLint("UseSparseArrays")
-	private final Map<Integer, String> cacheKeysForImageViewWrapper = Collections
-			.synchronizedMap(new HashMap<Integer, String>());
+	private final HttpWorker mHttpWorker;
 
-	// private final Map<String, ReentrantLock> uriLocks = new
-	// WeakHashMap<String, ReentrantLock>();
+	private static ImageLoader instance;
 
-	private final HashMap<String, BitmapRequest> mInFlightRequests = new HashMap<String, BitmapRequest>();
-
-	
-	private final static HttpWorker mWorker;
-	static {
-		if (Build.VERSION.SDK_INT >= 9) {
-			mWorker = new HurlWorker();
-		} else {
-			// Prior to Gingerbread, HttpUrlConnection was unreliable.
-			// See: http://android-developers.blogspot.com/2011/09/androids-http-clients.html
-			mWorker = new HttpClientWorker(AndroidHttpClient.newInstance("android"));
+	public static ImageLoader getInstance(Cache<Bitmap> cache) {
+		if (instance == null) {
+			synchronized (ImageLoader.class) {
+				if (instance == null) {
+					instance = new ImageLoader(cache);
+				}
+			}
 		}
+		return instance;
 	}
-	
-	public ImageLoader(Cache<Bitmap> cache) {
-		this.imageCache = cache;
+
+	private ImageLoader(Cache<Bitmap> cache) {
+		engine = new ImageLoaderEngine(cache);
+		mHttpWorker = HttpWorkerFactory.createHttpWorker();
 	}
 
 	public interface ImageLoadListener {
@@ -62,10 +49,6 @@ public class ImageLoader {
 				ImageLoader.getImageLoadListener(imageUrl, view, defaultImage, errorImage));
 	}
 
-	int id = 0;
-	
-	private ImageLoaderEngine engine = new ImageLoaderEngine(new ImageLruCache());
-	
 	public void load(final String url, final ImageViewWrapper imageWrapper, final ImageLoadListener listener) {
 		throwIfNotInMainThread();
 
@@ -74,76 +57,18 @@ public class ImageLoader {
 		if (TextUtils.isEmpty(url))
 			return;
 		Bitmap cachedBitmap = engine.getFromCache(cacheKey);
-		if (cachedBitmap != null) {
-			Log.d("Cache", "Load Image from cache");
+		if (cachedBitmap != null && !cachedBitmap.isRecycled()) {
+			Log.d(Constants.HTTP_TAG, "Load Image from cache");
 			listener.onSuccess(url, imageWrapper.getImageView(), cachedBitmap);
-			mInFlightRequests.remove(cacheKey);
 			return;
 		}
-		imageWrapper.imageViewRef.get().setImageResource(R.drawable.ic_launcher);
+		listener.onSuccess(url, imageWrapper.imageViewRef.get(), null);
 		engine.prepareDisplayTaskFor(imageWrapper, cacheKey);
 
-		ImageLoadingInfo loadingInfo = new ImageLoadingInfo(url, imageWrapper, listener, cacheKey, engine.getLockForUri(url));
-		LoadImageTask loadingTask = new LoadImageTask(loadingInfo, engine, mWorker);
+		ImageLoadingInfo loadingInfo = new ImageLoadingInfo(url, imageWrapper, listener, cacheKey,
+				engine.getLockForUri(url));
+		LoadImageTask loadingTask = new LoadImageTask(loadingInfo, engine, mHttpWorker);
 		engine.submit(loadingTask);
-//		final int index = id + 1;
-//		id += 1;
-//		BitmapRequest request = new BitmapRequest(url, new ResponseHandler<Bitmap>() {
-//
-//			@Override
-//			public void onSuccess(Bitmap bitmap) {
-//				putToCache(cacheKey, bitmap);
-//				mInFlightRequests.remove(cacheKey);
-//
-//				if (imageWrapper.isCollected()) {
-//					Log.e("HTTP", "collected at:" + index);
-//				} else if (isReused(imageWrapper, cacheKey)) {
-//					Log.e("HTTP", "reused at:" + index);
-//				} else {
-//					putToCache(cacheKey, bitmap);
-//					listener.onSuccess(url, imageWrapper.getImageView(), bitmap);
-//					cancelDisplayTaskFor(imageWrapper);
-//				}
-//			}
-//
-//			@Override
-//			public void onError(Error error) {
-//				mInFlightRequests.remove(cacheKey);
-//				cancelDisplayTaskFor(imageWrapper);
-//				listener.onError(error);
-//			}
-//		});
-	}
-	
-	
-	/**
-	 * 
-	 * @param wrapper
-	 * @param memoryCacheKey
-	 */
-	void prepareDisplayTaskFor(ImageViewWrapper wrapper, String memoryCacheKey) {
-		cacheKeysForImageViewWrapper.put(wrapper.getId(), memoryCacheKey);
-	}
-
-	/**
-	 * 
-	 */
-	void cancelDisplayTaskFor(ImageViewWrapper wrapper) {
-		cacheKeysForImageViewWrapper.remove(wrapper.getId());
-	}
-
-	String getLoadingUriForView(ImageViewWrapper wrapper) {
-		return cacheKeysForImageViewWrapper.get(wrapper.getId());
-	}
-	
-	/**
-	 * 判断view是否重用，如果是重用的view就不更新ui，防止使用viewholder错乱
-	 * @param memoryCacheKey
-	 * @return
-	 */
-	private boolean isReused(ImageViewWrapper wrapper, String cacheKey) {
-		String currentCacheKey = getLoadingUriForView(wrapper);
-		return !cacheKey.equals(currentCacheKey);
 	}
 
 	/**
@@ -153,18 +78,6 @@ public class ImageLoader {
 		if (Looper.myLooper() != Looper.getMainLooper()) {
 			throw new IllegalStateException("ImageLoader must be call from the main thread.");
 		}
-	}
-
-	private void putToCache(String cacheKey, Bitmap bitmap) {
-		if (imageCache != null) {
-			imageCache.put(cacheKey, bitmap);
-		}
-	}
-
-	private Bitmap getFromCache(String cacheKey) {
-		if (imageCache == null)
-			return null;
-		return imageCache.get(cacheKey);
 	}
 
 	/**

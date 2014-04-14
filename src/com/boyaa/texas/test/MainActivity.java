@@ -79,7 +79,7 @@ public class MainActivity extends Activity {
 		HttpExecutor.execute(request);
 	}
 
-	ImageLoader loader = new ImageLoader(new ImageLruCache());
+	ImageLoader loader = ImageLoader.getInstance(new ImageLruCache());
 
 	private void bitmapRequest() {
 		// "http://h.hiphotos.baidu.com/image/w%3D2048/sign=ae39fc65544e9258a63481eea8bad158/4610b912c8fcc3ce64e7dd329045d688d43f208f.jpg";

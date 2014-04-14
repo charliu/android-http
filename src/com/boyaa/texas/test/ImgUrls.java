@@ -7,7 +7,7 @@ public class ImgUrls {
 	public static List<String> getBig(int size) {
 		List<String> list = new ArrayList<String>();
 		String baseUrl = "http://pic1.sc.chinaz.com/files/pic/pic9/201404/apic";
-		for (int i = 150; i < 150 + size; i++) {
+		for (int i = 110; i < 110 + size; i++) {
 			list.add(baseUrl + i + ".jpg");
 		}
 		return list;

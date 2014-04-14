@@ -10,7 +10,10 @@ import org.apache.http.StatusLine;
 import org.apache.http.util.EntityUtils;
 
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
+import android.graphics.BitmapFactory.Options;
+import android.util.Log;
 
 public class LoadImageTask implements Runnable {
 	final ImageLoaderEngine engine;
@@ -25,7 +28,19 @@ public class LoadImageTask implements Runnable {
 
 	@Override
 	public void run() {
+		try {
+			Thread.sleep(500);
+		} catch (InterruptedException e) {
+			//
+		}
+		Bitmap bmp = engine.getFromCache(loadingInfo.cacheKey);
+		if (bmp != null && !bmp.isRecycled()) {
+			engine.post(new DispalyTask(loadingInfo, bmp));
+			engine.cancelDisplayTaskFor(loadingInfo.imageWrapper);
+			return;
+		}
 		if (taskNotActual()) {
+			Log.e(Constants.HTTP_TAG, "Loading task canceled");
 			return;
 		}
 		ReentrantLock loadLock = loadingInfo.mLock;
@@ -54,19 +69,23 @@ public class LoadImageTask implements Runnable {
 
 		@Override
 		public void run() {
-			if (taskNotActual())
+
+			if (taskNotActual()) {
+				Log.e(Constants.HTTP_TAG, "display reused, cancel!!!");
 				return;
+			}
 			if (bitmap != null) {
 				info.listener.onSuccess(info.uri, info.imageWrapper.getImageView(), bitmap);
 			} else {
 				info.listener.onError(new Error(Error.UNKNOWN_ERROR));
 			}
-
+			engine.cancelDisplayTaskFor(info.imageWrapper);
 		}
 
 	}
 
 	private Bitmap loadBitmap() throws IOException {
+		Log.i(Constants.HTTP_TAG, "Starting loading from internet");
 		Request<Bitmap> request = new BitmapRequest(loadingInfo.uri);
 		HttpResponse httpResponse = httpWorker.doHttpRquest(request);
 		StatusLine statusLine = httpResponse.getStatusLine();
@@ -74,7 +93,11 @@ public class LoadImageTask implements Runnable {
 		if (statusCode == HttpStatus.SC_OK) {
 			HttpEntity entity = httpResponse.getEntity();
 			byte[] data = EntityUtils.toByteArray(entity);
-			Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+			Options options = new Options();
+			options.inPreferredConfig = Config.RGB_565;
+			options.inPurgeable = true;
+			options.inInputShareable = true;
+			Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length, options);
 			if (bitmap != null) {
 				engine.putToCache(loadingInfo.cacheKey, bitmap);
 				return bitmap;

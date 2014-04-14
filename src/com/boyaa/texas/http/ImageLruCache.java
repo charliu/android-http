@@ -3,7 +3,7 @@ package com.boyaa.texas.http;
 import android.graphics.Bitmap;
 import android.support.v4.util.LruCache;
 
-public class ImageLruCache implements Cache<Bitmap> {
+public class ImageLruCache extends Cache<Bitmap> {
 	private final LruCache<String, Bitmap> bitmapCache;
 	
 	private static final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
