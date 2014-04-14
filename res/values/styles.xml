@@ -8,90 +8,10 @@
         <item name="android:windowIsFloating">true</item>
         <item name="android:backgroundDimEnabled">false</item>
     </style>
-    <!--
-        Base application theme, dependent on API level. This theme is replaced
-        by AppBaseTheme from res/values-vXX/styles.xml on newer devices.    -->
-    <style name="AppBaseTheme" parent="android:Theme.Light">
-        <!--
-            Theme customizations available in newer API levels can go in
-            res/values-vXX/styles.xml, while customizations related to
-            backward-compatibility can go here.
-        -->
-    </style>
+
+    <style name="AppBaseTheme" parent="android:Theme.Light"></style>
 
     <!-- Application theme. -->
-    <style name="AppTheme" parent="AppBaseTheme">
-        <!-- All customizations that are NOT specific to a particular API-level can go here. -->
-    </style>
-
-    <style name="TextTheme">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:gravity">center</item>
-    </style>
-    <!-- Large Text Style -->
-    <style name="LargeText" parent="TextTheme">
-        <item name="android:textSize">22sp</item>
-        <item name="android:singleLine">true</item>
-    </style>
-    <!-- Title Text Style -->
-    <style name="TitleText" parent="TextTheme">
-        <item name="android:textSize">20sp</item>
-        <item name="android:singleLine">true</item>
-    </style>
-    <!-- Default Content Text Style -->
-    <style name="ContentText" parent="TextTheme">
-        <item name="android:textSize">16sp</item>
-        <item name="android:textColor">@color/pc_dark_grey</item>
-    </style>
-    <!-- Grey Content Text Style -->
-    <style name="GreyContentText" parent="ContentText">
-        <item name="android:textColor">@color/pc_gray</item>
-    </style>
-    <!-- Default Button Style -->
-    <style name="Button" parent="ContentText">
-        <item name="android:singleLine">true</item>
-    </style>
-
-    <style name="GreenButton" parent="Button"></style>
-    <!-- Default EditText Style -->
-    <!-- Default Summary Text Style -->
-    <style name="EditText" parent="ContentText"></style>
-
-    <style name="SummaryText" parent="TextTheme">
-        <item name="android:textSize">14sp</item>
-        <item name="android:singleLine">true</item>
-    </style>
-
-    <style name="SmallText" parent="TextTheme">
-        <item name="android:textSize">12sp</item>
-        <item name="android:singleLine">true</item>
-    </style>
-    <!-- Grey Summary Text Style -->
-    <style name="GreySummaryText" parent="SummaryText">
-        <item name="android:textColor">@color/pc_gray</item>
-    </style>
-    <!-- Default List Style -->
-    <style name="List">
-        <item name="android:cacheColorHint">@null</item>
-        <item name="android:layout_width">fill_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-    </style>
-    <!-- Default Grid Style -->
-    <style name="Grid">
-        <item name="android:cacheColorHint">@null</item>
-        <item name="android:layout_width">fill_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-    </style>
-
-    <style name="DividerHorizontal">
-        <item name="android:layout_width">fill_parent</item>
-        <item name="android:layout_height">1dp</item>
-    </style>
-
-    <style name="DividerVertical">
-        <item name="android:layout_width">1dp</item>
-        <item name="android:layout_height">fill_parent</item>
-    </style>
+    <style name="AppTheme" parent="AppBaseTheme"></style>
 
 </resources>

@@ -60,7 +60,8 @@ public class HttpTask implements Runnable {
 					response = Response.error(new Error(statusCode, "not SC_OK error"));
 				}
 			} catch (IOException e) {
-				e.printStackTrace();
+				if (Constants.DEBUG)
+					e.printStackTrace();
 				response = Response.error(new Error(Error.NETWORK_ERROR, "network error"));
 			}
 		}

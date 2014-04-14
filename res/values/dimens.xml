@@ -1,23 +1,4 @@
 <resources>
 
-    <dimen name="layout_margin">12dp</dimen>
-    <dimen name="layout_horizontal_margin">12dp</dimen>
-    <dimen name="layout_vertical_margin">12dp</dimen>
-    <dimen name="list_item_margin">5dp</dimen>
-    <dimen name="interval_margin">5dp</dimen>
-    <!-- Dimension for loading drawable -->
-    <dimen name="space_small">6dp</dimen>
-    <dimen name="space_small_h">8dp</dimen>
-    <dimen name="space_medium">10dp</dimen>
-    <dimen name="space_medium_h">14dp</dimen>
-    <dimen name="space_large">20dp</dimen>
-    <dimen name="space_large_h">28dp</dimen>
-    <dimen name="width_small">54dp</dimen>
-    <dimen name="height_small">12dp</dimen>
-    <dimen name="width_medium">90dp</dimen>
-    <dimen name="height_medium">20dp</dimen>
-    <dimen name="width_large">180dp</dimen>
-    <dimen name="height_large">40dp</dimen>
-    <!--  -->
- <dimen name="list_item_footer_height">45dp</dimen>
+ <dimen name="padding">7dp</dimen>
 </resources>

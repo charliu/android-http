@@ -82,9 +82,9 @@ public class MainActivity extends Activity {
 	ImageLoader loader = new ImageLoader(new ImageLruCache());
 
 	private void bitmapRequest() {
-		// String url =
 		// "http://h.hiphotos.baidu.com/image/w%3D2048/sign=ae39fc65544e9258a63481eea8bad158/4610b912c8fcc3ce64e7dd329045d688d43f208f.jpg";
-		String url = "http://img10.3lian.com/c1/newpic/10/34/47.jpg";
-		loader.load(url, image, R.drawable.ic_launcher, R.drawable.error96);
+		//String url = "http://img10.3lian.com/c1/newpic/10/34/47.jpg";
+		String jay = "http://pic4.nipic.com/20091008/2128360_084655191316_2.jpg";
+		loader.load(jay, image, R.drawable.ic_launcher, R.drawable.error96);
 	}
 }
