@@ -11,7 +11,7 @@ import org.apache.http.StatusLine;
 import android.util.Log;
 
 /**
- * Http 请求任务 
+ * Http 请求任务
  * 
  * @author HuiLiu
  * 
@@ -91,7 +91,6 @@ public class HttpTask implements Runnable {
 		} finally {
 			try {
 				// Close the InputStream and release the resources by
-				// "consuming the content".
 				entity.consumeContent();
 			} catch (IOException e) {
 				// This can happen if there was an exception above that left the

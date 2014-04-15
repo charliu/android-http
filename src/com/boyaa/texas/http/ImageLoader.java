@@ -6,6 +6,11 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.widget.ImageView;
 
+/**
+ * 
+ * @author CharLiu
+ * 
+ */
 public class ImageLoader {
 
 	private ImageLoaderEngine engine;
@@ -14,11 +19,11 @@ public class ImageLoader {
 
 	private static ImageLoader instance;
 
-	public static ImageLoader getInstance(Cache<Bitmap> cache) {
+	public static ImageLoader getInstance() {
 		if (instance == null) {
 			synchronized (ImageLoader.class) {
 				if (instance == null) {
-					instance = new ImageLoader(cache);
+					instance = new ImageLoader(new ImageLruCache());
 				}
 			}
 		}
@@ -58,7 +63,9 @@ public class ImageLoader {
 			return;
 		Bitmap cachedBitmap = engine.getFromCache(cacheKey);
 		if (cachedBitmap != null && !cachedBitmap.isRecycled()) {
-			Log.d(Constants.HTTP_TAG, "Load Image from cache");
+			if (Constants.DEBUG) {
+				Log.d(Constants.HTTP_TAG, "Load Image from cache");
+			}
 			listener.onSuccess(url, imageWrapper.getImageView(), cachedBitmap);
 			return;
 		}
@@ -78,6 +85,15 @@ public class ImageLoader {
 		if (Looper.myLooper() != Looper.getMainLooper()) {
 			throw new IllegalStateException("ImageLoader must be call from the main thread.");
 		}
+	}
+
+	public static ImageLoadListener getImageLoadListener(final String url, final ImageView view) {
+		return getImageLoadListener(url, view, 0, 0);
+	}
+
+	public static ImageLoadListener getImageLoadListener(final String url, final ImageView view,
+			final int defaultImageResId) {
+		return getImageLoadListener(url, view, defaultImageResId, 0);
 	}
 
 	/**

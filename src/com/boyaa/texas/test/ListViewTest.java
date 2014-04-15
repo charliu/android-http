@@ -3,7 +3,6 @@ package com.boyaa.texas.test;
 import java.util.List;
 
 import com.boyaa.texas.http.ImageLoader;
-import com.boyaa.texas.http.ImageLruCache;
 import com.boyaa.texas.http.R;
 
 import android.app.Activity;
@@ -19,7 +18,7 @@ import android.widget.TextView;
 public class ListViewTest extends Activity {
 	private ListView listView;
 
-	 private ImageLoader loader = ImageLoader.getInstance(new ImageLruCache());
+	private ImageLoader loader = ImageLoader.getInstance();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -65,7 +64,7 @@ public class ListViewTest extends Activity {
 			}
 			String requestUrl = urls.get(position);
 			loader.load(requestUrl, holder.image, R.drawable.ic_launcher, R.drawable.error96);
-			
+
 			holder.text.setText("hello world " + position);
 			return convertView;
 		}

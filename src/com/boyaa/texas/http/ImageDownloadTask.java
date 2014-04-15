@@ -1,13 +1,13 @@
 package com.boyaa.texas.http;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
-import org.apache.http.util.EntityUtils;
 
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
@@ -15,6 +15,12 @@ import android.graphics.BitmapFactory;
 import android.graphics.BitmapFactory.Options;
 import android.util.Log;
 
+/**
+ * 图片下载任务
+ * 
+ * @author CharLiu
+ * 
+ */
 public class ImageDownloadTask implements Runnable {
 	final ImageLoaderEngine engine;
 	final ImageLoadingInfo loadingInfo;
@@ -75,12 +81,13 @@ public class ImageDownloadTask implements Runnable {
 				Log.e(Constants.HTTP_TAG, "display reused, cancel!!!");
 				return;
 			}
+			engine.cancelDisplayTaskFor(info.imageWrapper);
 			if (bitmap != null) {
 				info.listener.onSuccess(info.uri, info.imageWrapper.getImageView(), bitmap);
 			} else {
 				info.listener.onError(new Error(Error.UNKNOWN_ERROR));
 			}
-			engine.cancelDisplayTaskFor(info.imageWrapper);
+
 		}
 
 	}
@@ -105,8 +112,20 @@ public class ImageDownloadTask implements Runnable {
 		int statusCode = statusLine.getStatusCode();
 		if (statusCode == HttpStatus.SC_OK) {
 			HttpEntity entity = httpResponse.getEntity();
-			byte[] data = EntityUtils.toByteArray(entity);
-			Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length, defaultDecodeOptions);
+			Bitmap bitmap = null;
+			try {
+				InputStream in = entity.getContent();
+				if (in == null) {
+					throw new IOException("Bitmap inputstream is null");
+				}
+				bitmap = BitmapFactory.decodeStream(in, null, defaultDecodeOptions);
+			} finally {
+				try {
+					entity.consumeContent();
+				} catch (Exception e) {
+					// Do nothing
+				}
+			}
 			if (bitmap != null) {
 				engine.putToCache(loadingInfo.cacheKey, bitmap);
 				return bitmap;
