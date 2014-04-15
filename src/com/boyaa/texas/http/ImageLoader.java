@@ -17,7 +17,7 @@ public class ImageLoader {
 
 	private final HttpWorker mHttpWorker;
 
-	private static ImageLoader instance;
+	private volatile static ImageLoader instance;
 
 	public static ImageLoader getInstance() {
 		if (instance == null) {
@@ -95,7 +95,7 @@ public class ImageLoader {
 			final int defaultImageResId) {
 		return getImageLoadListener(url, view, defaultImageResId, 0);
 	}
-
+	
 	/**
 	 * 返回默认的ImageHandler
 	 * 
