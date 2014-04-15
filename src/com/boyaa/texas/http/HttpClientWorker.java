@@ -30,8 +30,7 @@ public class HttpClientWorker implements HttpWorker {
 		HttpUriRequest httpRequest = createUriRequest(request);
 		addRequestHeader(httpRequest, request.getHeaders());
 		HttpParams httpParams = httpRequest.getParams();
-        int timeoutMs = request.getSocketTimeout();
-        // 根据网络类型设置不同连接超时时间
+        int timeoutMs = request.getSoTimeout();
         HttpConnectionParams.setConnectionTimeout(httpParams, 5000);
         HttpConnectionParams.setSoTimeout(httpParams, timeoutMs);
         

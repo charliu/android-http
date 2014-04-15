@@ -171,7 +171,7 @@ public class HurlWorker implements HttpWorker {
 	private HttpURLConnection openConnection(URL url, Request<?> request) throws IOException {
 		HttpURLConnection connection = createConnection(url);
 
-		int timeoutMs = request.getSocketTimeout();
+		int timeoutMs = request.getSoTimeout();
 		connection.setConnectTimeout(timeoutMs);
 		connection.setReadTimeout(timeoutMs);
 		connection.setUseCaches(false);

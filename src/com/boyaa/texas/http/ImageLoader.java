@@ -67,7 +67,7 @@ public class ImageLoader {
 
 		ImageLoadingInfo loadingInfo = new ImageLoadingInfo(url, imageWrapper, listener, cacheKey,
 				engine.getLockForUri(url));
-		LoadImageTask loadingTask = new LoadImageTask(loadingInfo, engine, mHttpWorker);
+		ImageDownloadTask loadingTask = new ImageDownloadTask(loadingInfo, engine, mHttpWorker);
 		engine.submit(loadingTask);
 	}
 

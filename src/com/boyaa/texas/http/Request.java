@@ -34,7 +34,7 @@ public abstract class Request<T> {
 		cancel = true;
 	}
 
-	private int socketTimeoutMs = 30000;
+	private int soTimeoutMs = 30000;
 
 	private static String DEFAULT_PARAMS_ENCODING = "UTF-8";
 
@@ -63,8 +63,8 @@ public abstract class Request<T> {
 			mResponseHandler.onError(error);
 	}
 
-	public int getSocketTimeout() {
-		return socketTimeoutMs;
+	public int getSoTimeout() {
+		return soTimeoutMs;
 	}
 
 	public String getParamsEncoding() {
