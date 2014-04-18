@@ -16,7 +16,7 @@ public class BitmapRequest extends Request<Bitmap> {
 	public BitmapRequest(String url) {
 		super(url, null, null, null);
 	}
-	
+
 	public BitmapRequest(String url, ResponseHandler<Bitmap> handler) {
 		super(url, null, null, handler);
 	}
@@ -27,6 +27,7 @@ public class BitmapRequest extends Request<Bitmap> {
 	public Response<Bitmap> parseResponse(byte[] data) {
 		Options options = new Options();
 		options.inPreferredConfig = mConfig;
+		options.inPreferredConfig = Bitmap.Config.RGB_565;
 		synchronized (sDecodeLock) {
 			try {
 				Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length, options);
@@ -36,7 +37,7 @@ public class BitmapRequest extends Request<Bitmap> {
 					return Response.error(new Error(Error.PARSE_ERROR, "decode bitmap fail"));
 				}
 			} catch (OutOfMemoryError e) {
-				return Response.error(new Error(e));
+				return Response.error(new Error(e, Error.PARSE_ERROR, "Parse OutOfMemoryError"));
 			}
 		}
 	}

@@ -10,8 +10,10 @@ public class Error extends Throwable {
 	public String errorDescription;
 	public int errorCode;
 
-	public Error(Throwable t) {
+	public Error(Throwable t, int errorCode, String des) {
 		super(t);
+		this.errorCode = errorCode;
+		this.errorDescription = des;
 	}
 
 	public Error(int code) {

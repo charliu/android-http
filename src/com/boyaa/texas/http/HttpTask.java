@@ -68,7 +68,7 @@ public class HttpTask implements Runnable {
 			} catch (IOException e) {
 				if (Constants.DEBUG)
 					e.printStackTrace();
-				response = Response.error(new Error(Error.NETWORK_ERROR, "network error"));
+				response = Response.error(new Error(e, Error.NETWORK_ERROR, "IOException"));
 			}
 		}
 		if (!request.isCancled()) {
