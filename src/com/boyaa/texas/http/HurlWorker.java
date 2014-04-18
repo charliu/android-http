@@ -189,6 +189,7 @@ public class HurlWorker implements HttpWorker {
 		switch (request.getMethod()) {
 		case RequestMethod.GET:
 			connection.setRequestMethod("GET");
+			addBodyIfExists(connection, request);
 			break;
 		case RequestMethod.POST:
 			connection.setRequestMethod("POST");

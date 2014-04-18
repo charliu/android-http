@@ -17,6 +17,11 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 
+/**
+ * Use HttpClient execute an request, return HttpReqponse 
+ * @author CharLiu
+ *
+ */
 public class HttpClientWorker implements HttpWorker {
 
 	protected final HttpClient mClient;
@@ -30,16 +35,16 @@ public class HttpClientWorker implements HttpWorker {
 		HttpUriRequest httpRequest = createUriRequest(request);
 		addRequestHeader(httpRequest, request.getHeaders());
 		HttpParams httpParams = httpRequest.getParams();
-        int timeoutMs = request.getSoTimeout();
-        HttpConnectionParams.setConnectionTimeout(httpParams, 5000);
-        HttpConnectionParams.setSoTimeout(httpParams, timeoutMs);
-        
+		int timeoutMs = request.getSoTimeout();
+		HttpConnectionParams.setConnectionTimeout(httpParams, 5000);
+		HttpConnectionParams.setSoTimeout(httpParams, timeoutMs);
+
 		return mClient.execute(httpRequest);
 	}
-	
+
 	private void addRequestHeader(HttpUriRequest request, Map<String, String> headers) {
 		if (headers != null) {
-			for(String key : headers.keySet()) {
+			for (String key : headers.keySet()) {
 				request.addHeader(key, headers.get(key));
 			}
 		}
@@ -47,6 +52,11 @@ public class HttpClientWorker implements HttpWorker {
 
 	private HttpUriRequest createUriRequest(Request<?> request) {
 		if (request.mMethod == Request.RequestMethod.GET) {
+			if (request.getParams() != null) {
+				String requestUrl = request.getUrl() + "?" + new String(request.getBody());
+				return new HttpGet(requestUrl);
+			}
+
 			HttpGet getRequest = new HttpGet(request.getUrl());
 			return getRequest;
 		} else {
@@ -58,8 +68,7 @@ public class HttpClientWorker implements HttpWorker {
 				}
 				UrlEncodedFormEntity formEntity = null;
 				try {
-					formEntity = new UrlEncodedFormEntity(
-							postParams, request.getParamsEncoding());
+					formEntity = new UrlEncodedFormEntity(postParams, request.getParamsEncoding());
 				} catch (UnsupportedEncodingException e) {
 					e.printStackTrace();
 				}

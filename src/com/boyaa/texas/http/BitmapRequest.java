@@ -36,7 +36,7 @@ public class BitmapRequest extends Request<Bitmap> {
 					return Response.error(new Error(Error.PARSE_ERROR, "decode bitmap fail"));
 				}
 			} catch (OutOfMemoryError e) {
-				return Response.error(new Error(Error.PARSE_ERROR, "out of memory error"));
+				return Response.error(new Error(e));
 			}
 		}
 	}

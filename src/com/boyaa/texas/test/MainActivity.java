@@ -1,8 +1,11 @@
 package com.boyaa.texas.test;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.boyaa.texas.http.ImageLoader;
-import com.boyaa.texas.http.ImageLruCache;
 import com.boyaa.texas.http.PojoRequest;
+import com.boyaa.texas.http.Request.RequestMethod;
 import com.boyaa.texas.http.Response.ResponseHandler;
 import com.boyaa.texas.http.Error;
 import com.boyaa.texas.http.R;
@@ -19,7 +22,8 @@ import android.widget.Toast;
 
 public class MainActivity extends Activity {
 	private ImageView image;
-
+	private static final int GET = 1;
+	private static final int POST = 2;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -29,8 +33,11 @@ public class MainActivity extends Activity {
 
 	public void onClickButton(View v) {
 		switch (v.getId()) {
-		case R.id.stringRequest:
-			stringRequest();
+		case R.id.stringRequestGet:
+			stringRequest(GET);
+			break;
+		case R.id.stringRequestPost:
+			stringRequest(POST);
 			break;
 		case R.id.pojoRequest:
 			pojoRequest();
@@ -45,12 +52,14 @@ public class MainActivity extends Activity {
 		}
 	}
 
-	private void stringRequest() {
-		String url = "http://www.webxml.com.cn/webservices/WeatherWebService.asmx/getSupportCity?byProvinceName=hello";
-		StringRequest request = new StringRequest(url, null, null, new ResponseHandler<String>() {
+	private void stringRequest(int method) {
+		String url = "http://www.webxml.com.cn/webservices/WeatherWebService.asmx/getSupportCity";
+		Map<String, String> map = new HashMap<String, String>();
+		map.put("byProvinceName", "北京");
+		StringRequest request = new StringRequest(url, null, map, new ResponseHandler<String>() {
 			@Override
 			public void onSuccess(String response) {
-				Toast.makeText(MainActivity.this, "POJO Test:" + response, Toast.LENGTH_LONG).show();
+				Toast.makeText(MainActivity.this, "String Test:" + response, Toast.LENGTH_LONG).show();
 			}
 
 			@Override
@@ -58,6 +67,11 @@ public class MainActivity extends Activity {
 				Toast.makeText(MainActivity.this, "error:" + e.errorDescription, Toast.LENGTH_LONG).show();
 			}
 		});
+		if (method == 1) {
+			request.mMethod = RequestMethod.GET;
+		} else {
+			request.mMethod = RequestMethod.POST;
+		}
 		HttpExecutor.execute(this, request, true);
 	}
 

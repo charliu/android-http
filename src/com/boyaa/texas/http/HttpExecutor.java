@@ -11,9 +11,15 @@ import android.content.DialogInterface.OnDismissListener;
 import android.os.Handler;
 import android.os.Looper;
 
+/**
+ * HttpRequest执行者
+ * 
+ * @author CharLiu
+ * 
+ */
 public class HttpExecutor {
 	private static final int CORE_POOL_SIZE = 5;
-	private static final int MAXIMUM_POOL_SIZE = 64;
+	private static final int MAXIMUM_POOL_SIZE = 128;
 	private static final int THREAD_PRIORITY = Thread.NORM_PRIORITY - 1;
 
 	private final static HttpWorker mHttpWorker = HttpWorkerFactory.createHttpWorker();
@@ -22,12 +28,12 @@ public class HttpExecutor {
 
 	private static final BlockingQueue<Runnable> sPoolWorkQueue = new LinkedBlockingQueue<Runnable>();
 
-	public static final Executor THREAD_POOL_EXECUTOR = ExecutorFactory.createExecutor(CORE_POOL_SIZE,
+	public static final Executor HTTP_THREAD_POOL_EXECUTOR = ExecutorFactory.createExecutor(CORE_POOL_SIZE,
 			MAXIMUM_POOL_SIZE, THREAD_PRIORITY, sPoolWorkQueue);
-
+	
 	public static void execute(Request<?> request) {
 		HttpTask task = new HttpTask(request, mPoster, mHttpWorker);
-		THREAD_POOL_EXECUTOR.execute(task);
+		HTTP_THREAD_POOL_EXECUTOR.execute(task);
 	}
 
 	public static void execute(Context context, Request<?> request, boolean showProgressBar) {
@@ -36,7 +42,7 @@ public class HttpExecutor {
 		if (showProgressBar) {
 			request.dialog.show();
 		}
-		THREAD_POOL_EXECUTOR.execute(task);
+		HTTP_THREAD_POOL_EXECUTOR.execute(task);
 	}
 
 	private static Dialog createLoadingDialog(Context context, final Request<?> request) {

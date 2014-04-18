@@ -34,11 +34,11 @@ public class ImageDownloadTask implements Runnable {
 
 	@Override
 	public void run() {
-		try {
-			Thread.sleep(500);
-		} catch (InterruptedException e) {
-			//
-		}
+//		try {
+//			Thread.sleep(500);
+//		} catch (InterruptedException e) {
+//			//
+//		}
 		Bitmap bmp = engine.getFromCache(loadingInfo.cacheKey);
 		if (bmp != null && !bmp.isRecycled()) {
 			engine.post(new DispalyTask(loadingInfo, bmp));

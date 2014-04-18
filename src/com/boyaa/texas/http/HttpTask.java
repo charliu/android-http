@@ -57,7 +57,13 @@ public class HttpTask implements Runnable {
 						break;
 					}
 				} else {
-					response = Response.error(new Error(statusCode, "not SC_OK error"));
+					String errorStr = "Server error";
+					if (Constants.DEBUG) {
+						byte[] data = entityToBytes(httpResponse.getEntity());
+						errorStr += "INFO:" + new String(data);
+					}
+					response = Response.error(new Error(statusCode, errorStr));
+					break;
 				}
 			} catch (IOException e) {
 				if (Constants.DEBUG)
@@ -89,17 +95,21 @@ public class HttpTask implements Runnable {
 			}
 			return bytes.toByteArray();
 		} finally {
-			try {
-				// Close the InputStream and release the resources by
-				entity.consumeContent();
-			} catch (IOException e) {
-				// This can happen if there was an exception above that left the
-				// entity in
-				// an invalid state.
-				Log.e("HTTP", "Error occured when calling consumingContent");
-			}
+			consumeEntity(entity);
 			mPool.returnBuf(buffer);
 			bytes.close();
+		}
+	}
+
+	private void consumeEntity(HttpEntity entity) {
+		try {
+			// Close the InputStream and release the resources by
+			entity.consumeContent();
+		} catch (IOException e) {
+			// This can happen if there was an exception above that left the
+			// entity in
+			// an invalid state.
+			Log.e("HTTP", "Error occured when calling consumingContent");
 		}
 	}
 

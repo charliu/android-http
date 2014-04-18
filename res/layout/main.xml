@@ -6,12 +6,17 @@
     tools:context=".MainActivity" >
 
     <Button
-        android:id="@+id/stringRequest"
+        android:id="@+id/stringRequestGet"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:onClick="onClickButton"
-        android:text="string request" />
-    
+        android:text="String Request GET" />
+    <Button
+        android:id="@+id/stringRequestPost"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="onClickButton"
+        android:text="String Request POST" />
     <Button
         android:id="@+id/pojoRequest"
         android:layout_width="wrap_content"

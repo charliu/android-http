@@ -9,21 +9,24 @@ import android.app.Dialog;
 import com.boyaa.texas.http.Response.ResponseHandler;
 
 /**
- * Request抽象，提供如下功能:
- * 请求信息封装
- * 解析返回数据{@link #parseResponse(byte[])}
- * 分发请求数据结果{@link #dispatchResponse(Object) #dispatchError(Error)}
+ * Request抽象，提供如下功能: 请求信息封装 解析返回数据{@link #parseResponse(byte[])} 分发请求数据结果
+ * {@link #dispatchResponse(Object) #dispatchError(Error)}
+ * 
  * @author charliu
- *
+ * 
  * @param <T>
  */
 public abstract class Request<T> {
+
+	private static String DEFAULT_PARAMS_ENCODING = "UTF-8";
+
 	private final String mUrl;
-	private Map<String, String> mHeaders;
-	private Map<String, String> mParams;
-	protected final ResponseHandler<T> mResponseHandler;
-	public int mMethod = RequestMethod.GET;
+	private Map<String, String> mHeaders;  //HTTP 头部
+	private Map<String, String> mParams;   //HTTP 参数
+	protected final ResponseHandler<T> mResponseHandler; //HTTP请求回调
+	public int mMethod = RequestMethod.GET; // Reuqest Method
 	public Dialog dialog;
+	private String paramsEncoding = DEFAULT_PARAMS_ENCODING;
 	private boolean cancel = false;
 
 	public boolean isCancled() {
@@ -34,9 +37,7 @@ public abstract class Request<T> {
 		cancel = true;
 	}
 
-	private int soTimeoutMs = 30000;
-
-	private static String DEFAULT_PARAMS_ENCODING = "UTF-8";
+	private int soTimeoutMs = 30000; //Response 响应超时时间：30秒
 
 	public interface RequestMethod {
 		int GET = 1;
@@ -50,17 +51,24 @@ public abstract class Request<T> {
 		this.mResponseHandler = handler;
 	}
 
+	/**
+	 * 解析返回数据
+	 * 
+	 * @param data
+	 * @return
+	 */
 	public abstract Response<T> parseResponse(byte[] data);
 
 	protected void dispatchResponse(T response) {
-		// do nothing
-		if (mResponseHandler != null)
+		if (mResponseHandler != null) {
 			mResponseHandler.onSuccess(response);
+		}
 	}
 
 	protected void dispatchError(Error error) {
-		if (mResponseHandler != null)
+		if (mResponseHandler != null) {
 			mResponseHandler.onError(error);
+		}
 	}
 
 	public int getSoTimeout() {
@@ -68,7 +76,11 @@ public abstract class Request<T> {
 	}
 
 	public String getParamsEncoding() {
-		return DEFAULT_PARAMS_ENCODING;
+		return paramsEncoding;
+	}
+
+	public void setParamsEncoding(String encoding) {
+		paramsEncoding = encoding;
 	}
 
 	public String getBodyContentType() {
@@ -102,7 +114,7 @@ public abstract class Request<T> {
 	public int getMethod() {
 		return mMethod;
 	}
-
+	
 	public byte[] getBody() {
 		Map<String, String> params = getParams();
 		if (params != null && params.size() > 0) {
@@ -110,7 +122,13 @@ public abstract class Request<T> {
 		}
 		return null;
 	}
-
+	
+	/**
+	 * 编码参数
+	 * @param params
+	 * @param paramsEncoding
+	 * @return
+	 */
 	private byte[] encodeParameters(Map<String, String> params, String paramsEncoding) {
 		StringBuilder encodedParams = new StringBuilder();
 		try {
