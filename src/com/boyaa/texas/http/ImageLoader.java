@@ -40,7 +40,6 @@ public class ImageLoader {
 	private static File getDefaultDiskCacheDir() {
 		String sdCard = Environment.getExternalStorageDirectory().getAbsolutePath();
 		File file = new File(sdCard + File.separator + DEFAULT_DISK_CACHE_DIR);
-		Log.e("FILE", file.getAbsolutePath());
 		if (!file.exists()) {
 			if (file.mkdirs()) {
 				return file;

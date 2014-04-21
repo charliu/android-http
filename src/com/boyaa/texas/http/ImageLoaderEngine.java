@@ -21,8 +21,8 @@ import android.os.Looper;
  * 
  */
 public class ImageLoaderEngine {
-	Cache<Bitmap> memoryCache;
-	Cache<Bitmap> diskCache;
+	private Cache<Bitmap> memoryCache;
+	private Cache<Bitmap> diskCache;
 	private static final int CORE_POOL_SIZE = 5;
 	private static final int MAXIMUM_POOL_SIZE = 64;
 
@@ -99,6 +99,16 @@ public class ImageLoaderEngine {
 		if (diskCache == null)
 			return null;
 		return diskCache.get(cacheKey);
+	}
+	
+	public void clearDiskCache() {
+		if (diskCache != null)
+			diskCache.clear();
+	}
+	
+	public void clearMemoryCache() {
+		if (diskCache != null)
+			memoryCache.clear();
 	}
 
 	public boolean isReused(ImageViewWrapper wrapper, String cacheKey) {
