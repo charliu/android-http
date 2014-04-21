@@ -1,6 +1,11 @@
 package com.boyaa.texas.http;
 
+import java.io.File;
+
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
+import android.graphics.BitmapFactory.Options;
+import android.os.Environment;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
@@ -19,19 +24,35 @@ public class ImageLoader {
 
 	private volatile static ImageLoader instance;
 
+	private static String DEFAULT_DISK_CACHE_DIR = "texas" + File.separator + ".Cache";
+
 	public static ImageLoader getInstance() {
 		if (instance == null) {
 			synchronized (ImageLoader.class) {
 				if (instance == null) {
-					instance = new ImageLoader(new ImageLruCache());
+					instance = new ImageLoader(new ImageLruCache(), new ImageDiskCache(getDefaultDiskCacheDir()));
 				}
 			}
 		}
 		return instance;
 	}
 
-	private ImageLoader(Cache<Bitmap> cache) {
-		engine = new ImageLoaderEngine(cache);
+	private static File getDefaultDiskCacheDir() {
+		String sdCard = Environment.getExternalStorageDirectory().getAbsolutePath();
+		File file = new File(sdCard + File.separator + DEFAULT_DISK_CACHE_DIR);
+		Log.e("FILE", file.getAbsolutePath());
+		if (!file.exists()) {
+			if (file.mkdirs()) {
+				return file;
+			} else {
+				Log.e(Constants.HTTP_TAG, "create disk cache dir fail");
+			}
+		}
+		return file;
+	}
+
+	private ImageLoader(Cache<Bitmap> memoryCache, Cache<Bitmap> diskCache) {
+		engine = new ImageLoaderEngine(memoryCache, diskCache);
 		mHttpWorker = HttpWorkerFactory.createHttpWorker();
 	}
 
@@ -61,10 +82,10 @@ public class ImageLoader {
 
 		if (TextUtils.isEmpty(url))
 			return;
-		Bitmap cachedBitmap = engine.getFromCache(cacheKey);
+		Bitmap cachedBitmap = engine.getFromMemoryCache(cacheKey);
 		if (cachedBitmap != null && !cachedBitmap.isRecycled()) {
 			if (Constants.DEBUG) {
-				Log.d(Constants.HTTP_TAG, "Load Image from cache");
+				Log.d(Constants.HTTP_TAG, "Load Image from memory cache");
 			}
 			listener.onSuccess(url, imageWrapper.getImageView(), cachedBitmap);
 			return;
@@ -74,7 +95,7 @@ public class ImageLoader {
 
 		ImageLoadingInfo loadingInfo = new ImageLoadingInfo(url, imageWrapper, listener, cacheKey,
 				engine.getLockForUri(url));
-		ImageDownloadTask loadingTask = new ImageDownloadTask(loadingInfo, engine, mHttpWorker);
+		ImageLoadTask loadingTask = new ImageLoadTask(loadingInfo, engine, mHttpWorker);
 		engine.submit(loadingTask);
 	}
 
@@ -95,7 +116,7 @@ public class ImageLoader {
 			final int defaultImageResId) {
 		return getImageLoadListener(url, view, defaultImageResId, 0);
 	}
-	
+
 	/**
 	 * 返回默认的ImageHandler
 	 * 
@@ -125,5 +146,17 @@ public class ImageLoader {
 				}
 			}
 		};
+	}
+
+	/**
+	 * 默认decode options
+	 * @return
+	 */
+	public static Options getDefaultOptions() {
+		Options options = new Options();
+		options.inPreferredConfig = Config.RGB_565;
+		options.inPurgeable = true;
+		options.inInputShareable = true;
+		return options;
 	}
 }

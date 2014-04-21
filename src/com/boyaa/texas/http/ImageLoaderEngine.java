@@ -15,7 +15,8 @@ import android.os.Handler;
 import android.os.Looper;
 
 public class ImageLoaderEngine {
-	Cache<Bitmap> imageCache;
+	Cache<Bitmap> memoryCache;
+	Cache<Bitmap> diskCache;
 	private static final int CORE_POOL_SIZE = 5;
 	private static final int MAXIMUM_POOL_SIZE = 64;
 
@@ -30,8 +31,9 @@ public class ImageLoaderEngine {
 
 	private final Map<String, ReentrantLock> uriLocks = new WeakHashMap<String, ReentrantLock>();
 
-	public ImageLoaderEngine(Cache<Bitmap> cache) {
-		this.imageCache = cache;
+	public ImageLoaderEngine(Cache<Bitmap> memoryCache, Cache<Bitmap> diskCache) {
+		this.memoryCache = memoryCache;
+		this.diskCache = diskCache;
 		BlockingQueue<Runnable> taskQueue = new LinkedBlockingQueue<Runnable>();
 		taskDistributor = Executors.newCachedThreadPool();
 		THREAD_POOL_EXECUTOR = ExecutorFactory.createExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE,
@@ -69,16 +71,28 @@ public class ImageLoaderEngine {
 		cacheKeysForImageViewWrapper.remove(wrapper.getId());
 	}
 
-	public void putToCache(String cacheKey, Bitmap bitmap) {
-		if (imageCache != null) {
-			imageCache.put(cacheKey, bitmap);
+	public void putToMemoryCache(String cacheKey, Bitmap bitmap) {
+		if (memoryCache != null) {
+			memoryCache.put(cacheKey, bitmap);
 		}
 	}
 
-	public Bitmap getFromCache(String cacheKey) {
-		if (imageCache == null)
+	public Bitmap getFromMemoryCache(String cacheKey) {
+		if (memoryCache == null)
 			return null;
-		return imageCache.get(cacheKey);
+		return memoryCache.get(cacheKey);
+	}
+	
+	public void putToDiskCache(String cacheKey, Bitmap bitmap) {
+		if (diskCache != null) {
+			diskCache.put(cacheKey, bitmap);
+		}
+	}
+	
+	public Bitmap getFromDiskCache(String cacheKey) {
+		if (diskCache == null)
+			return null;
+		return diskCache.get(cacheKey);
 	}
 
 	public boolean isReused(ImageViewWrapper wrapper, String cacheKey) {

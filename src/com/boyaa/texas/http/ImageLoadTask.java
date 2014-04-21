@@ -10,7 +10,6 @@ import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 
 import android.graphics.Bitmap;
-import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapFactory.Options;
 import android.util.Log;
@@ -21,12 +20,13 @@ import android.util.Log;
  * @author CharLiu
  * 
  */
-public class ImageDownloadTask implements Runnable {
+public class ImageLoadTask implements Runnable {
 	final ImageLoaderEngine engine;
 	final ImageLoadingInfo loadingInfo;
 	final HttpWorker httpWorker;
+	private final Options defaultDecodeOptions = ImageLoader.getDefaultOptions();
 
-	public ImageDownloadTask(ImageLoadingInfo info, ImageLoaderEngine engine, HttpWorker worker) {
+	public ImageLoadTask(ImageLoadingInfo info, ImageLoaderEngine engine, HttpWorker worker) {
 		this.loadingInfo = info;
 		this.engine = engine;
 		this.httpWorker = worker;
@@ -39,7 +39,7 @@ public class ImageDownloadTask implements Runnable {
 //		} catch (InterruptedException e) {
 //			//
 //		}
-		Bitmap bmp = engine.getFromCache(loadingInfo.cacheKey);
+		Bitmap bmp = engine.getFromMemoryCache(loadingInfo.cacheKey);
 		if (bmp != null && !bmp.isRecycled()) {
 			engine.post(new DispalyTask(loadingInfo, bmp));
 			engine.cancelDisplayTaskFor(loadingInfo.imageWrapper);
@@ -53,7 +53,7 @@ public class ImageDownloadTask implements Runnable {
 		loadLock.lock();
 		Bitmap bitmap = null;
 		try {
-			bitmap = downloadBitmap();
+			bitmap = loadBitmap();
 			if (taskNotActual())
 				return;
 		} catch (Exception e) {
@@ -92,17 +92,16 @@ public class ImageDownloadTask implements Runnable {
 
 	}
 
-	private final Options defaultDecodeOptions = createDefaultOptions();
-
-	private Options createDefaultOptions() {
-		Options options = new Options();
-		options.inPreferredConfig = Config.RGB_565;
-		options.inPurgeable = true;
-		options.inInputShareable = true;
-		return options;
-	}
-
-	private Bitmap downloadBitmap() throws IOException {
+	private Bitmap loadBitmap() throws IOException {
+		Bitmap bitmap = engine.getFromDiskCache(loadingInfo.cacheKey);
+		if (bitmap != null) {
+			engine.putToMemoryCache(loadingInfo.cacheKey, bitmap);
+			if (Constants.DEBUG) {
+				Log.i(Constants.HTTP_TAG, "Load image from disk cache");
+			}
+			engine.putToMemoryCache(loadingInfo.cacheKey, bitmap);
+			return bitmap;
+		}
 		if (Constants.DEBUG) {
 			Log.i(Constants.HTTP_TAG, "Start download image from internet");
 		}
@@ -112,7 +111,6 @@ public class ImageDownloadTask implements Runnable {
 		int statusCode = statusLine.getStatusCode();
 		if (statusCode == HttpStatus.SC_OK) {
 			HttpEntity entity = httpResponse.getEntity();
-			Bitmap bitmap = null;
 			try {
 				InputStream in = entity.getContent();
 				if (in == null) {
@@ -127,7 +125,8 @@ public class ImageDownloadTask implements Runnable {
 				}
 			}
 			if (bitmap != null) {
-				engine.putToCache(loadingInfo.cacheKey, bitmap);
+				engine.putToMemoryCache(loadingInfo.cacheKey, bitmap);
+				engine.putToDiskCache(loadingInfo.cacheKey, bitmap);
 				return bitmap;
 			}
 		}
