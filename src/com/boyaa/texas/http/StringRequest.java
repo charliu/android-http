@@ -4,7 +4,13 @@ import java.util.Map;
 
 import com.boyaa.texas.http.Response.ResponseHandler;
 
-public class StringRequest extends Request<String>{
+/**
+ * 字符串请求
+ * 
+ * @author CharLiu
+ * 
+ */
+public class StringRequest extends Request<String> {
 
 	public StringRequest(String url, Map<String, String> header, Map<String, String> params,
 			ResponseHandler<String> handler) {

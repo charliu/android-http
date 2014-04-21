@@ -3,6 +3,12 @@ package com.boyaa.texas.http;
 import android.graphics.Bitmap;
 import android.support.v4.util.LruCache;
 
+/**
+ * Bitmap内存缓存
+ * 
+ * @author CharLiu
+ * 
+ */
 public class ImageLruCache extends Cache<Bitmap> {
 	private final LruCache<String, Bitmap> bitmapCache;
 

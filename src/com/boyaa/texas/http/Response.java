@@ -2,7 +2,7 @@ package com.boyaa.texas.http;
 
 /**
  * 返回数据
- * @author HuiLiu
+ * @author CharLiu
  *
  * @param <T> 返回数据类型
  */

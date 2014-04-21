@@ -15,6 +15,12 @@ public class Error extends Throwable {
 		this.errorCode = errorCode;
 		this.errorDescription = des;
 	}
+	
+	public Error(Throwable t, int errorCode) {
+		super(t);
+		this.errorCode = errorCode;
+		this.errorDescription = "";
+	}
 
 	public Error(int code) {
 		this(code, "");

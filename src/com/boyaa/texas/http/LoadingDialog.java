@@ -10,7 +10,7 @@ import android.widget.ProgressBar;
 
 /**
  * 正在加载 Dialog
- * @author HuiLiu
+ * @author CharLiu
  *
  */
 public class LoadingDialog extends Dialog {

@@ -13,7 +13,7 @@ import android.util.Log;
 /**
  * Http 请求任务
  * 
- * @author HuiLiu
+ * @author CharLiu
  * 
  */
 public class HttpTask implements Runnable {

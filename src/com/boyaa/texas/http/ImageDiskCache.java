@@ -11,6 +11,11 @@ import android.graphics.BitmapFactory;
 import android.graphics.BitmapFactory.Options;
 import android.text.TextUtils;
 
+/**
+ * Bitmap磁盘缓存
+ * @author CharLiu
+ *
+ */
 public class ImageDiskCache extends Cache<Bitmap> {
 	File cacheDir;
 	Options options = ImageLoader.getDefaultOptions();

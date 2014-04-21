@@ -7,6 +7,11 @@ import org.json.JSONObject;
 
 import com.boyaa.texas.http.Response.ResponseHandler;
 
+/**
+ * JSON请求
+ * @author CharLiu
+ *
+ */
 public class JsonRequest extends Request<JSONObject>{
 
 	public JsonRequest(String url, Map<String, String> header, Map<String, String> params,
@@ -21,8 +26,9 @@ public class JsonRequest extends Request<JSONObject>{
 			return Response.success(new JSONObject(jsonStr));
 		} catch (JSONException e) {
 			e.printStackTrace();
+			return Response.error(new Error(e, Error.PARSE_ERROR, "Parse json fail"));
 		}
-		return Response.error(new Error(Error.PARSE_ERROR, "parse error"));
+		
 	}
 
 }

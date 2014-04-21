@@ -7,6 +7,11 @@ import android.graphics.BitmapFactory.Options;
 
 import com.boyaa.texas.http.Response.ResponseHandler;
 
+/**
+ * Bitmap Request
+ * @author CharLiu
+ *
+ */
 public class BitmapRequest extends Request<Bitmap> {
 
 	private static final byte[] sDecodeLock = new byte[1]; // 一次只decode一张图片
@@ -34,7 +39,7 @@ public class BitmapRequest extends Request<Bitmap> {
 				if (bitmap != null) {
 					return Response.success(bitmap);
 				} else {
-					return Response.error(new Error(Error.PARSE_ERROR, "decode bitmap fail"));
+					return Response.error(new Error(Error.PARSE_ERROR, "Decode bitmap fail"));
 				}
 			} catch (OutOfMemoryError e) {
 				return Response.error(new Error(e, Error.PARSE_ERROR, "Parse OutOfMemoryError"));

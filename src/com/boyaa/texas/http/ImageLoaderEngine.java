@@ -14,6 +14,12 @@ import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.Looper;
 
+/**
+ * Image加载引擎，负责缓存，线程池管理
+ * 
+ * @author CharLiu
+ * 
+ */
 public class ImageLoaderEngine {
 	Cache<Bitmap> memoryCache;
 	Cache<Bitmap> diskCache;
@@ -82,13 +88,13 @@ public class ImageLoaderEngine {
 			return null;
 		return memoryCache.get(cacheKey);
 	}
-	
+
 	public void putToDiskCache(String cacheKey, Bitmap bitmap) {
 		if (diskCache != null) {
 			diskCache.put(cacheKey, bitmap);
 		}
 	}
-	
+
 	public Bitmap getFromDiskCache(String cacheKey) {
 		if (diskCache == null)
 			return null;

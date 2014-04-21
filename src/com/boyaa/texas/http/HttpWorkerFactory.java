@@ -3,10 +3,16 @@ package com.boyaa.texas.http;
 import android.net.http.AndroidHttpClient;
 import android.os.Build;
 
+/**
+ * 根据当前SDK版本创建合适的HttpWorker
+ * 
+ * @author CharLiu
+ */
 public final class HttpWorkerFactory {
 
 	public static HttpWorker createHttpWorker() {
-//		return new HttpClientWorker(AndroidHttpClient.newInstance("android"));
+		// return new
+		// HttpClientWorker(AndroidHttpClient.newInstance("android"));
 		if (Build.VERSION.SDK_INT >= 9) {
 			return new HurlWorker();
 		} else {

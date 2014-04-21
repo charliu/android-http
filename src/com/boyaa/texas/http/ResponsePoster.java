@@ -6,7 +6,7 @@ import android.os.Handler;
 
 /**
  * 请求返回结果转发
- * @author HuiLiu
+ * @author CharLiu
  *
  */
 public class ResponsePoster {

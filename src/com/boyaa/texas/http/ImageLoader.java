@@ -12,9 +12,9 @@ import android.util.Log;
 import android.widget.ImageView;
 
 /**
+ * Image加载类，单例 {@link #load(String, ImageView) #load(String, ImageView, ImageLoadListener)}
  * 
  * @author CharLiu
- * 
  */
 public class ImageLoader {
 
@@ -75,7 +75,11 @@ public class ImageLoader {
 				ImageLoader.getImageLoadListener(imageUrl, view, defaultImage, errorImage));
 	}
 
-	public void load(final String url, final ImageViewWrapper imageWrapper, final ImageLoadListener listener) {
+	public void load(final String imageUrl, ImageView view, final ImageLoadListener listener) {
+		load(imageUrl, new ImageViewWrapper(view), listener);
+	}
+
+	private void load(final String url, final ImageViewWrapper imageWrapper, final ImageLoadListener listener) {
 		throwIfNotInMainThread();
 
 		final String cacheKey = CacheKeyUtil.generate(url);
@@ -150,6 +154,7 @@ public class ImageLoader {
 
 	/**
 	 * 默认decode options
+	 * 
 	 * @return
 	 */
 	public static Options getDefaultOptions() {

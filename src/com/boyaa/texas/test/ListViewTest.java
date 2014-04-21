@@ -1,7 +1,5 @@
 package com.boyaa.texas.test;
 
-import java.util.List;
-
 import com.boyaa.texas.http.ImageLoader;
 import com.boyaa.texas.http.R;
 
