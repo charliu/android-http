@@ -2,9 +2,11 @@ package com.boyaa.texas.http;
 
 /**
  * 返回数据
+ * 
  * @author CharLiu
- *
- * @param <T> 返回数据类型
+ * 
+ * @param <T>
+ *            返回数据类型
  */
 public class Response<T> {
 	public final T result;
@@ -23,14 +25,14 @@ public class Response<T> {
 	public interface ResponseHandler<T> {
 		void onSuccess(T response);
 
-		void onError(Error e);
+		void onError(Error error);
 	}
 
 	public boolean isSuccess() {
 		return error == null;
 	}
 
-	 /** Returns a successful response containing the parsed result. */
+	/** Returns a successful response containing the parsed result. */
 	public static <T> Response<T> success(T result) {
 		return new Response<T>(result);
 	}

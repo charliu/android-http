@@ -11,6 +11,8 @@ import com.boyaa.texas.http.Error;
 import com.boyaa.texas.http.R;
 import com.boyaa.texas.http.HttpExecutor;
 import com.boyaa.texas.http.StringRequest;
+import com.boyaa.texas.mvc.BaseCallback;
+import com.boyaa.texas.mvc.BusinessModel;
 
 import android.os.Bundle;
 import android.app.Activity;
@@ -24,17 +26,30 @@ public class MainActivity extends Activity {
 	private ImageView image;
 	private static final int GET = 1;
 	private static final int POST = 2;
+	private BusinessModel model;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 		image = (ImageView) findViewById(R.id.image);
+		model = new BusinessModel();
 	}
 
 	public void onClickButton(View v) {
 		switch (v.getId()) {
 		case R.id.stringRequestGet:
-			stringRequest(GET);
+			model.getBaiduString(new BaseCallback<String>() {
+				
+				@Override
+				public void onResult(String response) {
+					
+				}
+				
+				@Override
+				public void onError(Error error) {
+					
+				}
+			});
 			break;
 		case R.id.stringRequestPost:
 			stringRequest(POST);
