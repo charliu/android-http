@@ -2,7 +2,14 @@ package com.boyaa.texas.http;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.message.BasicNameValuePair;
 
 import android.app.Dialog;
 
@@ -42,8 +49,9 @@ public abstract class Request<T> {
 	public interface RequestMethod {
 		int GET = 1;
 		int POST = 2;
+		int HEAD = 3;
 	}
-
+	
 	public Request(String url, Map<String, String> header, Map<String, String> params, ResponseHandler<T> handler) {
 		this.mUrl = url;
 		this.mHeaders = header;
@@ -90,6 +98,12 @@ public abstract class Request<T> {
 	public String getUrl() {
 		return mUrl;
 	}
+	
+	public String getRequestUrl() {
+		if (getParams() == null) 
+			return mUrl;
+		return mUrl + "?" + new String(getBody());
+	}
 
 	public Map<String, String> getHeaders() {
 		return mHeaders;
@@ -121,6 +135,22 @@ public abstract class Request<T> {
 			return encodeParameters(params, getParamsEncoding());
 		}
 		return null;
+	}
+	
+	public HttpEntity getPostEntity() {
+		UrlEncodedFormEntity formEntity = null;
+		if (getParams() != null) {
+			List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+			for (String key : getParams().keySet()) {
+				postParams.add(new BasicNameValuePair(key, getParams().get(key)));
+			}
+			try {
+				formEntity = new UrlEncodedFormEntity(postParams, getParamsEncoding());
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
+		}
+		return formEntity;
 	}
 	
 	/**

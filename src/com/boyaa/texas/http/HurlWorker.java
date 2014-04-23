@@ -195,6 +195,10 @@ public class HurlWorker implements HttpWorker {
 			connection.setRequestMethod("POST");
 			addBodyIfExists(connection, request);
 			break;
+		case RequestMethod.HEAD:
+			connection.setRequestMethod("HEAD");
+			addBodyIfExists(connection, request);
+			break;
 		default:
 			throw new IllegalStateException("Unknown method type.");
 		}

@@ -3,6 +3,8 @@ package com.boyaa.texas.test;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.boyaa.texas.http.FileDownloader;
+import com.boyaa.texas.http.FileDownloader.DownloadTask;
 import com.boyaa.texas.http.ImageLoader;
 import com.boyaa.texas.http.PojoRequest;
 import com.boyaa.texas.http.Request.RequestMethod;
@@ -42,14 +44,13 @@ public class MainActivity extends Activity {
 				
 				@Override
 				public void onResult(String response) {
-					
+					Toast.makeText(MainActivity.this, "String Get Rquest\n" + response, Toast.LENGTH_SHORT).show();
 				}
-				
 				@Override
 				public void onError(Error error) {
 					
 				}
-			});
+			}, GET, MainActivity.this);
 			break;
 		case R.id.stringRequestPost:
 			stringRequest(POST);
@@ -64,7 +65,23 @@ public class MainActivity extends Activity {
 			Intent intent = new Intent(MainActivity.this, ListViewTest.class);
 			startActivity(intent);
 			break;
+		case R.id.file_download:
+			if (downloadTask == null) {
+				downloadFile("http://gdown.baidu.com/data/wisegame/e1e4baae4d20464c/aiqiyishipin_79.apk");
+			} else {
+				if (downloadTask.isStoped()) {
+					downloadTask.startDownload();
+				} else {
+					downloadTask.stopDownload();
+				}
+			}
 		}
+	}
+	
+	private DownloadTask downloadTask;
+
+	private void downloadFile(String fileUrl) {
+		downloadTask = FileDownloader.download(fileUrl);
 	}
 
 	private void stringRequest(int method) {

@@ -1,13 +1,23 @@
 package com.boyaa.texas.mvc;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import android.content.Context;
+
 import com.boyaa.texas.http.Error;
 import com.boyaa.texas.http.HttpExecutor;
+import com.boyaa.texas.http.Request.RequestMethod;
 import com.boyaa.texas.http.Response.ResponseHandler;
 import com.boyaa.texas.http.StringRequest;
 
 public class BusinessModel {
-	public void getBaiduString(final BaseCallback<String> callback) {
-		StringRequest request = new StringRequest("http://www.baidu.com", null, null, new ResponseHandler<String>() {
+	public void getBaiduString(final BaseCallback<String> callback, int method, Context context) {
+		
+		String url = "http://www.webxml.com.cn/webservices/WeatherWebService.asmx/getSupportCity";
+		Map<String, String> map = new HashMap<String, String>();
+		map.put("byProvinceName", "北京");
+		StringRequest request = new StringRequest(url, null, map, new ResponseHandler<String>() {
 			@Override
 			public void onSuccess(String response) {
 				callback.onResult(response);
@@ -18,6 +28,12 @@ public class BusinessModel {
 				callback.onError(e);
 			}
 		});
-		HttpExecutor.execute(request);
+		if (method == 1) {
+			request.mMethod = RequestMethod.GET;
+		} else {
+			request.mMethod = RequestMethod.POST;
+		}
+		HttpExecutor.execute(context, request, true);
+		
 	}
 }

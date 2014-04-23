@@ -1,19 +1,15 @@
 package com.boyaa.texas.http;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 
@@ -51,30 +47,21 @@ public class HttpClientWorker implements HttpWorker {
 	}
 
 	private HttpUriRequest createUriRequest(Request<?> request) {
-		if (request.mMethod == Request.RequestMethod.GET) {
-			if (request.getParams() != null) {
-				String requestUrl = request.getUrl() + "?" + new String(request.getBody());
-				return new HttpGet(requestUrl);
-			}
-
-			HttpGet getRequest = new HttpGet(request.getUrl());
-			return getRequest;
-		} else {
+		switch(request.mMethod) {
+		
+		case Request.RequestMethod.GET:
+			return new HttpGet(request.getRequestUrl());
+		case Request.RequestMethod.POST:
 			HttpPost postRequest = new HttpPost(request.getUrl());
-			if (request.getParams() != null) {
-				List<NameValuePair> postParams = new ArrayList<NameValuePair>();
-				for (String key : request.getParams().keySet()) {
-					postParams.add(new BasicNameValuePair(key, request.getParams().get(key)));
-				}
-				UrlEncodedFormEntity formEntity = null;
-				try {
-					formEntity = new UrlEncodedFormEntity(postParams, request.getParamsEncoding());
-				} catch (UnsupportedEncodingException e) {
-					e.printStackTrace();
-				}
-				postRequest.setEntity(formEntity);
+			HttpEntity entity = request.getPostEntity();
+			if (entity != null) {
+				postRequest.setEntity(entity);
 			}
 			return postRequest;
+		case Request.RequestMethod.HEAD:
+			return new HttpHead(request.getRequestUrl());
+			default:
+				throw new IllegalArgumentException("Http request method not support");
 		}
 	}
 }

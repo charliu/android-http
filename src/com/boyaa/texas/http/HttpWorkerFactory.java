@@ -11,8 +11,8 @@ import android.os.Build;
 public final class HttpWorkerFactory {
 
 	public static HttpWorker createHttpWorker() {
-		// return new
-		// HttpClientWorker(AndroidHttpClient.newInstance("android"));
+//		return new HurlWorker();
+//		return new HttpClientWorker(AndroidHttpClient.newInstance("android"));
 		if (Build.VERSION.SDK_INT >= 9) {
 			return new HurlWorker();
 		} else {
