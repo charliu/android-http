@@ -5,7 +5,7 @@ import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapFactory.Options;
 
-import com.boyaa.texas.http.Response.ResponseHandler;
+import com.boyaa.texas.http.Response.ResponseListener;
 
 /**
  * Bitmap Request
@@ -22,8 +22,8 @@ public class BitmapRequest extends Request<Bitmap> {
 		super(url, null, null, null);
 	}
 
-	public BitmapRequest(String url, ResponseHandler<Bitmap> handler) {
-		super(url, null, null, handler);
+	public BitmapRequest(String url, ResponseListener<Bitmap> listener) {
+		super(url, null, null, listener);
 	}
 
 	public Bitmap mResponse;

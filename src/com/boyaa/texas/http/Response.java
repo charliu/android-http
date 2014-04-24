@@ -22,7 +22,7 @@ public class Response<T> {
 		this.error = err;
 	}
 
-	public interface ResponseHandler<T> {
+	public interface ResponseListener<T> {
 		void onSuccess(T response);
 
 		void onError(Error error);

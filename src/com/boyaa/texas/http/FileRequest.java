@@ -3,7 +3,7 @@ package com.boyaa.texas.http;
 import java.io.File;
 import java.util.Map;
 
-import com.boyaa.texas.http.Response.ResponseHandler;
+import com.boyaa.texas.http.Response.ResponseListener;
 
 public class FileRequest extends Request<File>{
 
@@ -16,8 +16,8 @@ public class FileRequest extends Request<File>{
 		super(url, header, null, null);
 	}
 	
-	public FileRequest(String url, Map<String, String> header, Map<String, String> params, ResponseHandler<File> handler) {
-		super(url, header, params, handler);
+	public FileRequest(String url, Map<String, String> header, Map<String, String> params, ResponseListener<File> listener) {
+		super(url, header, params, listener);
 	}
 
 	@Override

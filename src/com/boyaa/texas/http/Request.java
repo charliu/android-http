@@ -13,7 +13,7 @@ import org.apache.http.message.BasicNameValuePair;
 
 import android.app.Dialog;
 
-import com.boyaa.texas.http.Response.ResponseHandler;
+import com.boyaa.texas.http.Response.ResponseListener;
 
 /**
  * Request抽象，提供如下功能: 请求信息封装 解析返回数据{@link #parseResponse(byte[])} 分发请求数据结果
@@ -30,7 +30,7 @@ public abstract class Request<T> {
 	private final String mUrl;
 	private Map<String, String> mHeaders;  //HTTP 头部
 	private Map<String, String> mParams;   //HTTP 参数
-	protected final ResponseHandler<T> mResponseHandler; //HTTP请求回调
+	protected final ResponseListener<T> mResponseListener; //HTTP请求回调
 	public int mMethod = RequestMethod.GET; // Reuqest Method
 	public Dialog dialog;
 	private String paramsEncoding = DEFAULT_PARAMS_ENCODING;
@@ -52,11 +52,11 @@ public abstract class Request<T> {
 		int HEAD = 3;
 	}
 	
-	public Request(String url, Map<String, String> header, Map<String, String> params, ResponseHandler<T> handler) {
+	public Request(String url, Map<String, String> header, Map<String, String> params, ResponseListener<T> listener) {
 		this.mUrl = url;
 		this.mHeaders = header;
 		this.mParams = params;
-		this.mResponseHandler = handler;
+		this.mResponseListener = listener;
 	}
 
 	/**
@@ -68,14 +68,14 @@ public abstract class Request<T> {
 	public abstract Response<T> parseResponse(byte[] data);
 
 	protected void dispatchResponse(T response) {
-		if (mResponseHandler != null) {
-			mResponseHandler.onSuccess(response);
+		if (mResponseListener != null) {
+			mResponseListener.onSuccess(response);
 		}
 	}
 
 	protected void dispatchError(Error error) {
-		if (mResponseHandler != null) {
-			mResponseHandler.onError(error);
+		if (mResponseListener != null) {
+			mResponseListener.onError(error);
 		}
 	}
 
@@ -121,8 +121,8 @@ public abstract class Request<T> {
 		this.mParams = mParams;
 	}
 
-	public ResponseHandler<T> getResponseHandler() {
-		return mResponseHandler;
+	public ResponseListener<T> getResponseListener() {
+		return mResponseListener;
 	}
 
 	public int getMethod() {

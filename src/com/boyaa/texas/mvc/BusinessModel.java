@@ -8,7 +8,7 @@ import android.content.Context;
 import com.boyaa.texas.http.Error;
 import com.boyaa.texas.http.HttpExecutor;
 import com.boyaa.texas.http.Request.RequestMethod;
-import com.boyaa.texas.http.Response.ResponseHandler;
+import com.boyaa.texas.http.Response.ResponseListener;
 import com.boyaa.texas.http.StringRequest;
 
 public class BusinessModel {
@@ -17,7 +17,7 @@ public class BusinessModel {
 		String url = "http://www.webxml.com.cn/webservices/WeatherWebService.asmx/getSupportCity";
 		Map<String, String> map = new HashMap<String, String>();
 		map.put("byProvinceName", "北京");
-		StringRequest request = new StringRequest(url, null, map, new ResponseHandler<String>() {
+		StringRequest request = new StringRequest(url, null, map, new ResponseListener<String>() {
 			@Override
 			public void onSuccess(String response) {
 				callback.onResult(response);

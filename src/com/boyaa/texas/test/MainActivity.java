@@ -11,7 +11,7 @@ import com.boyaa.texas.http.FileDownloader;
 import com.boyaa.texas.http.ImageLoader;
 import com.boyaa.texas.http.PojoRequest;
 import com.boyaa.texas.http.Request.RequestMethod;
-import com.boyaa.texas.http.Response.ResponseHandler;
+import com.boyaa.texas.http.Response.ResponseListener;
 import com.boyaa.texas.http.Error;
 import com.boyaa.texas.http.R;
 import com.boyaa.texas.http.HttpExecutor;
@@ -111,7 +111,7 @@ public class MainActivity extends Activity {
 
 			@Override
 			public void onComplete(File downloadedFile) {
-				Toast.makeText(MainActivity.this, "file success download saved at " + downloadedFile.getAbsolutePath(),
+				Toast.makeText(MainActivity.this, "Download success, saved at:\n" + downloadedFile.getAbsolutePath(),
 						1).show();
 			}
 
@@ -126,7 +126,7 @@ public class MainActivity extends Activity {
 		String url = "http://www.webxml.com.cn/webservices/WeatherWebService.asmx/getSupportCity";
 		Map<String, String> map = new HashMap<String, String>();
 		map.put("byProvinceName", "北京");
-		StringRequest request = new StringRequest(url, null, map, new ResponseHandler<String>() {
+		StringRequest request = new StringRequest(url, null, map, new ResponseListener<String>() {
 			@Override
 			public void onSuccess(String response) {
 				Toast.makeText(MainActivity.this, "String Test:" + response, Toast.LENGTH_LONG).show();
@@ -147,7 +147,7 @@ public class MainActivity extends Activity {
 
 	private void pojoRequest() {
 		String url = "http://www.webxml.com.cn/webservices/WeatherWebService.asmx/getSupportCity?byProvinceName=hello";
-		PojoRequest<TestPojo> request = new PojoRequest<TestPojo>(url, null, null, new ResponseHandler<TestPojo>() {
+		PojoRequest<TestPojo> request = new PojoRequest<TestPojo>(url, null, null, new ResponseListener<TestPojo>() {
 
 			@Override
 			public void onSuccess(TestPojo response) {

@@ -5,7 +5,7 @@ import java.util.Map;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.boyaa.texas.http.Response.ResponseHandler;
+import com.boyaa.texas.http.Response.ResponseListener;
 
 /**
  * JSON请求
@@ -15,8 +15,8 @@ import com.boyaa.texas.http.Response.ResponseHandler;
 public class JsonRequest extends Request<JSONObject>{
 
 	public JsonRequest(String url, Map<String, String> header, Map<String, String> params,
-			ResponseHandler<JSONObject> handler) {
-		super(url, header, params, handler);
+			ResponseListener<JSONObject> listener) {
+		super(url, header, params, listener);
 	}
 
 	@Override

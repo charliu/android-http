@@ -2,14 +2,14 @@ package com.boyaa.texas.http;
 
 import java.util.Map;
 
-import com.boyaa.texas.http.Response.ResponseHandler;
+import com.boyaa.texas.http.Response.ResponseListener;
 
 public class PojoRequest<T extends Pojo> extends Request<T>{
 	
 	Class<T> cls;
 	
-	public PojoRequest(String url, Map<String, String> header, Map<String, String> params, ResponseHandler<T> handler, Class<T> cls) {
-		super(url, header, params, handler);
+	public PojoRequest(String url, Map<String, String> header, Map<String, String> params, ResponseListener<T> listener, Class<T> cls) {
+		super(url, header, params, listener);
 		this.cls = cls;
 	}
 	

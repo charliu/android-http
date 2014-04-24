@@ -118,7 +118,7 @@ public class ImageLoader {
 	}
 
 	/**
-	 * 返回默认的ImageHandler
+	 * 返回默认的ImageLoadListener
 	 * 
 	 * @param view
 	 * @param defaultImageResId
