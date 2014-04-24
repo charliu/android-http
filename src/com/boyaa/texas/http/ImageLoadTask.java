@@ -12,7 +12,6 @@ import org.apache.http.StatusLine;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapFactory.Options;
-import android.util.Log;
 
 /**
  * 图片下载任务
@@ -34,11 +33,6 @@ public class ImageLoadTask implements Runnable {
 
 	@Override
 	public void run() {
-		// try {
-		// Thread.sleep(500);
-		// } catch (InterruptedException e) {
-		// //
-		// }
 		Bitmap bmp = engine.getFromMemoryCache(loadingInfo.cacheKey);
 		if (bmp != null && !bmp.isRecycled()) {
 			engine.post(new DispalyTask(loadingInfo, bmp));
@@ -46,7 +40,7 @@ public class ImageLoadTask implements Runnable {
 			return;
 		}
 		if (taskNotActual()) {
-			Log.e(Constants.HTTP_TAG, "Loading task canceled");
+			HLog.d("Loading task canceled");
 			return;
 		}
 		ReentrantLock loadLock = loadingInfo.mLock;
@@ -78,7 +72,7 @@ public class ImageLoadTask implements Runnable {
 		public void run() {
 
 			if (taskNotActual()) {
-				Log.e(Constants.HTTP_TAG, "display reused, cancel!!!");
+				HLog.e("display reused, cancel!!!");
 				return;
 			}
 			engine.cancelDisplayTaskFor(info.imageWrapper);

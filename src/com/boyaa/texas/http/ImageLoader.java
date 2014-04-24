@@ -8,7 +8,6 @@ import android.graphics.BitmapFactory.Options;
 import android.os.Environment;
 import android.os.Looper;
 import android.text.TextUtils;
-import android.util.Log;
 import android.widget.ImageView;
 
 /**
@@ -44,7 +43,7 @@ public class ImageLoader {
 			if (file.mkdirs()) {
 				return file;
 			} else {
-				Log.e(Constants.HTTP_TAG, "create disk cache dir fail");
+				HLog.e("create disk cache dir fail");
 			}
 		}
 		return file;
@@ -81,7 +80,7 @@ public class ImageLoader {
 	private void load(final String url, final ImageViewWrapper imageWrapper, final ImageLoadListener listener) {
 		throwIfNotInMainThread();
 
-		final String cacheKey = CacheKeyUtil.generate(url);
+		final String cacheKey = MD5Util.generateMD5(url);
 
 		if (TextUtils.isEmpty(url))
 			return;

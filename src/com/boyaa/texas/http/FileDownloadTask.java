@@ -16,65 +16,67 @@ import android.os.Handler;
 import android.os.Looper;
 
 /**
- * 文件下载任务
- * {@link #startDownload() 开始下载 }
- * {@link #stopDownload() 停止下载 }
+ * 文件下载任务 {@link #startDownload() 开始下载 } {@link #stopDownload() 停止下载 }
+ * 
  * @author CharLiu
- *
+ * 
  */
 public class FileDownloadTask {
-	private final String fileUrl; //文件url地址
-	private final String tempFileName; //临时文件名称，为fileUrl的md5值
-	private final String fileSavePath; //文件保存路径
+	private final String fileUrl; // 文件url地址
+	private final String tempFileName; // 临时文件名称，为fileUrl的md5值
+	private final String fileSavePath; // 文件保存路径
 	private final HttpWorker httpWorker;
 	private final DownloadListener downloadListener;
 	private Handler postHandler;
 
 	private Thread downloadThread;
 	private long fileTotalSize = -1;
-	private long downloadedTempFileSize = 0; //已下载部分字节数
-	private long readSize = 0; //当前进程下载所读取的字节数
-	private int currentPercent = 0; //下载百分比
+	private long downloadedTempFileSize = 0; // 已下载部分字节数
+	private long readSize = 0; // 当前进程下载所读取的字节数
+	private int currentPercent = 0; // 下载百分比
 	private volatile boolean stop = false;
 	private String fileName;
 
 	/**
-	 * @param url 文件URL地址
-	 * @param savePath 保存路径
-	 * @param listener 下载过程回调函数，可以为null
+	 * @param url
+	 *            文件URL地址
+	 * @param savePath
+	 *            保存路径
+	 * @param listener
+	 *            下载过程回调函数，可以为null
 	 */
 	FileDownloadTask(String url, String savePath, DownloadListener listener) {
 		this.fileUrl = url;
 		this.fileSavePath = savePath;
 		httpWorker = HttpWorkerFactory.createHttpWorker();
 		fileName = getFileName(url);
-		tempFileName = CacheKeyUtil.generate(fileUrl);
+		tempFileName = MD5Util.generateMD5(fileUrl);
 		downloadListener = listener;
 		if (downloadListener != null) {
 			postHandler = new Handler(Looper.getMainLooper());
 		}
 	}
-	
+
 	/**
 	 * 下载回调接口
-	 * @author CharLiu
-	 * {@link #onStart(String) 开始下载}
-	 * {@link #onUpdateProgress(long, long, int) 更新进度}
-	 * {@link #onError(DownloadError) 下载出错}
-	 * {@link #onComplete(File) 下载完成}
+	 * 
+	 * @author CharLiu {@link #onStart(String) 开始下载}
+	 *         {@link #onUpdateProgress(long, long, int) 更新进度}
+	 *         {@link #onError(DownloadError) 下载出错} {@link #onComplete(File)
+	 *         下载完成}
 	 */
 	public interface DownloadListener {
 		void onStart(String fileUrl);
 
 		void onUpdateProgress(long currentSize, long totalSize, int percent);
-		
+
 		void onComplete(File downloadedFile);
-		
+
 		void onError(DownloadError error);
 	}
 
 	/**
-	 * 启动下载
+	 * 开始下载
 	 */
 	public void startDownload() {
 		if (downloadListener != null) {
@@ -92,10 +94,13 @@ public class FileDownloadTask {
 				download();
 			}
 		}, "FileDownload thead");
-		
+
 		downloadThread.start();
 	}
-
+	
+	/**
+	 * 停止下载，停止后可以调用startDownload继续下载
+	 */
 	public void stopDownload() {
 		stop = true;
 		downloadThread = null;
@@ -109,7 +114,7 @@ public class FileDownloadTask {
 		return fileUrl.substring(fileUrl.lastIndexOf(File.separator));
 	}
 
-	private String getSaveFilePath(String fileName) {
+	private String getSaveFileAbsolutePath(String fileName) {
 		return fileSavePath + File.separator + fileName;
 	}
 
@@ -123,7 +128,7 @@ public class FileDownloadTask {
 		}
 		return header;
 	}
-	
+
 	/**
 	 * 下载文件
 	 */
@@ -134,16 +139,16 @@ public class FileDownloadTask {
 			postDonwloadSuccess(existFile);
 			return;
 		}
-		
+
 		resetSize();
 
 		initSaveFilePath(fileSavePath);
-		String fileTempPath = getSaveFilePath(tempFileName);
+		String fileTempPath = getSaveFileAbsolutePath(tempFileName);
 		File downloadTempFile = new File(fileTempPath);
 		Map<String, String> headers = getRangeHeaderByFile(downloadTempFile);
 		FileRequest request = new FileRequest(fileUrl, headers);
 
-		InputStream in = null;
+		HttpEntity entity = null;
 		RandomAccessFile raf = null;
 		boolean badTempFile = false;
 		try {
@@ -156,27 +161,34 @@ public class FileDownloadTask {
 			}
 			HLog.i("fileTotalSize:" + fileTotalSize);
 			if (statusCode == HttpStatus.SC_OK || statusCode == HttpStatus.SC_PARTIAL_CONTENT) {
-				stop = false;
-				raf = new RandomAccessFile(downloadTempFile, "rw");
-				raf.seek(raf.length());
-				in = response.getEntity().getContent();
-				byte[] buffer = new byte[1024];
-				int length = 0;
-				int percent = 0;
-				while (!stop && (length = in.read(buffer)) != -1) {
-					raf.write(buffer, 0, length);
-					readSize += length;
-					long downloadedTotalSize = downloadedTempFileSize + readSize;
-					currentPercent = (int) ((downloadedTotalSize * 100) / fileTotalSize);
-					if (currentPercent > percent) {
-						HLog.i("read size:" + downloadedTotalSize + " read percent:"
-								+ currentPercent);
-						postUpdateProgress();
+				if (response.getEntity() != null) {
+					raf = new RandomAccessFile(downloadTempFile, "rw");
+					raf.seek(raf.length());
+					InputStream inputStream = response.getEntity().getContent();
+					byte[] buffer = new byte[1024];
+					int length = 0;
+					int percent = 0;
+					stop = false;
+					while (!stop && (length = inputStream.read(buffer)) != -1) {
+						raf.write(buffer, 0, length);
+						readSize += length;
+						long downloadedTotalSize = downloadedTempFileSize + readSize;
+						currentPercent = (int) ((downloadedTotalSize * 100) / fileTotalSize);
+						if (currentPercent > percent) {
+							HLog.i("read size:" + downloadedTotalSize + " read percent:" + currentPercent);
+							postUpdateProgress();
+						}
+						percent = currentPercent;
 					}
-					percent = currentPercent;
+				} else {
+					throw new IOException("Entity is null");
 				}
+
 			} else if (statusCode == HttpStatus.SC_REQUESTED_RANGE_NOT_SATISFIABLE) {
 				badTempFile = true;
+				throw new IOException("Requested range not satisfiable");
+			} else {
+				throw new IOException("Server error,statusCode not 200 or 206");
 			}
 
 		} catch (IOException e) {
@@ -185,7 +197,7 @@ public class FileDownloadTask {
 			e.printStackTrace();
 		} finally {
 			stop = true;
-			releaseConnection(in, raf);
+			releaseResouce(entity, raf);
 		}
 		if (badTempFile) {
 			if (downloadTempFile.exists()) {
@@ -194,7 +206,7 @@ public class FileDownloadTask {
 		}
 		if (downloadTempFile.exists()) {
 			if ((readSize + downloadedTempFileSize) == fileTotalSize) {
-				final File renameFile = createRenameFile(getSaveFilePath(fileName));
+				final File renameFile = createRenameFile(getSaveFileAbsolutePath(fileName));
 				if (downloadTempFile.renameTo(renameFile)) {
 					postDonwloadSuccess(renameFile);
 				} else {
@@ -204,7 +216,7 @@ public class FileDownloadTask {
 		}
 
 	}
-	
+
 	/**
 	 * 重置size
 	 */
@@ -213,7 +225,7 @@ public class FileDownloadTask {
 		currentPercent = 0;
 		downloadedTempFileSize = 0;
 	}
-	
+
 	private void postError(final IOException e) {
 		final DownloadError error = new DownloadError(e, Error.NETWORK_ERROR);
 		error.setFileTotalSize(fileTotalSize);
@@ -251,13 +263,14 @@ public class FileDownloadTask {
 	}
 
 	/**
-	 * 判断文件是否已下载 根据要下载文件实际总长度与本地临时文件或已存在的同名文件SIZE作对 如果相等则认为是已经下载过了
+	 * 判断文件是否已下载 根据要下载文件实际总长度(用http head请求或得)与本地临时文件或已存在的同名文件SIZE对比
+	 * 如果相等则认为是已经下载过了
 	 * 
-	 * @return
+	 * @return 如果已下载就返回这个file， 没有返回null
 	 */
 	private File checkFileExists() {
-		File existFile = new File(getSaveFilePath(fileName));
-		File tempFile = new File(getSaveFilePath(tempFileName));
+		File existFile = new File(getSaveFileAbsolutePath(fileName));
+		File tempFile = new File(getSaveFileAbsolutePath(tempFileName));
 
 		if ((existFile.exists() && existFile.isFile()) || (tempFile.exists() && tempFile.isFile())) {
 			getFileTotalLengthByHeadRequest();
@@ -267,7 +280,7 @@ public class FileDownloadTask {
 		if (fileTotalSize != -1) {
 			if (existFile.exists() && existFile.isFile()) {
 				if (existFile.length() == fileTotalSize) {
-					// 当存在的文件size大于要下载的文件，说明这个文件是脏文件，删除
+					// 当存在的文件size大于要下载的文件，就认为这个文件是脏文件，删除
 					deleteFile(tempFile);
 					return existFile;
 				} else if (existFile.length() > fileTotalSize) {
@@ -281,7 +294,7 @@ public class FileDownloadTask {
 					tempFile.renameTo(renameFile);
 					return renameFile;
 				} else if (tempFile.length() > fileTotalSize) {
-					// 当存在的文件size大于要下载的文件，说明这个文件是脏文件，删除
+					// 当存在的文件size大于要下载的文件，就认为这个文件是脏文件，删除
 					tempFile.delete();
 				}
 			}
@@ -301,17 +314,21 @@ public class FileDownloadTask {
 			int statusCode = headResponse.getStatusLine().getStatusCode();
 			if (statusCode == HttpStatus.SC_OK) {
 				fileTotalSize = getContentLength(headResponse);
+			} else {
+				fileTotalSize = -1;
 			}
 
 		} catch (IOException e) {
-			e.printStackTrace();
 			fileTotalSize = -1;
+			if (Constants.LOG_E) {
+				e.printStackTrace();
+			}
 		} finally {
 			if (headEntity != null) {
 				try {
 					headEntity.consumeContent();
 				} catch (IOException e) {
-					//
+					// Do nothing
 				}
 			}
 		}
@@ -320,9 +337,14 @@ public class FileDownloadTask {
 	private long getContentLength(HttpResponse response) {
 		Header[] headers = response.getHeaders("Content-Length");
 		if (headers.length > 0) {
-			return Long.valueOf(headers[0].getValue());
+			try {
+				long length = Long.valueOf(headers[0].getValue());
+				return length;
+			} catch (NumberFormatException e) {
+				return -1;
+			}
 		}
-		return 0;
+		return -1;
 	}
 
 	/**
@@ -349,10 +371,10 @@ public class FileDownloadTask {
 		tmpPath.mkdirs();
 	}
 
-	private void releaseConnection(InputStream in, RandomAccessFile raf) {
-		if (in != null) {
+	private void releaseResouce(HttpEntity entity, RandomAccessFile raf) {
+		if (entity != null) {
 			try {
-				in.close();
+				entity.consumeContent();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

@@ -6,14 +6,14 @@ import java.security.NoSuchAlgorithmException;
 
 /**
  * 
- * @author charliu
+ * @author CharLiu
  * 
  */
-public class CacheKeyUtil {
+public class MD5Util {
 	private static final String HASH_ALGORITHM = "MD5";
 	private static final int RADIX = 10 + 26; // 10 digits + 26 letters
 
-	public static String generate(String imageUri) {
+	public static String generateMD5(String imageUri) {
 		byte[] md5 = getMD5(imageUri.getBytes());
 		BigInteger bi = new BigInteger(md5).abs();
 		return bi.toString(RADIX);

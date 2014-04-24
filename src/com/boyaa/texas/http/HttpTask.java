@@ -8,8 +8,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 
-import android.util.Log;
-
 /**
  * Http 请求任务
  * 
@@ -55,10 +53,11 @@ public class HttpTask implements Runnable {
 						byte[] data = entityToBytes(httpResponse.getEntity());
 						response = request.parseResponse(data);
 						break;
+					} else {
+						response = Response.error(new Error(Error.SERVER_ERROR, "StatusCode 200 without response"));
 					}
 				} else {
-					String errorStr = "Server error";
-					response = Response.error(new Error(statusCode, errorStr));
+					response = Response.error(new Error(statusCode, "Server error statusCode not 200"));
 					break;
 				}
 			} catch (IOException e) {
@@ -105,7 +104,7 @@ public class HttpTask implements Runnable {
 			// This can happen if there was an exception above that left the
 			// entity in
 			// an invalid state.
-			Log.e("HTTP", "Error occured when calling consumingContent");
+			HLog.e("Error occured when calling consumingContent");
 		}
 	}
 
