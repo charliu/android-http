@@ -1,10 +1,12 @@
 package com.boyaa.texas.test;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.boyaa.texas.http.FileDownloadTask;
+import com.boyaa.texas.http.FileDownloadTask.DownloadListener;
 import com.boyaa.texas.http.FileDownloader;
-import com.boyaa.texas.http.FileDownloader.DownloadTask;
 import com.boyaa.texas.http.ImageLoader;
 import com.boyaa.texas.http.PojoRequest;
 import com.boyaa.texas.http.Request.RequestMethod;
@@ -22,6 +24,7 @@ import android.content.Intent;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
@@ -29,26 +32,32 @@ public class MainActivity extends Activity {
 	private static final int GET = 1;
 	private static final int POST = 2;
 	private BusinessModel model;
+	private ProgressBar progressBar;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 		image = (ImageView) findViewById(R.id.image);
 		model = new BusinessModel();
+		progressBar = (ProgressBar) findViewById(R.id.progressBar);
+		progressBar.setMax(100);
+		progressBar.setVisibility(View.INVISIBLE);
 	}
 
 	public void onClickButton(View v) {
 		switch (v.getId()) {
 		case R.id.stringRequestGet:
 			model.getBaiduString(new BaseCallback<String>() {
-				
+
 				@Override
 				public void onResult(String response) {
 					Toast.makeText(MainActivity.this, "String Get Rquest\n" + response, Toast.LENGTH_SHORT).show();
 				}
+
 				@Override
 				public void onError(Error error) {
-					
+
 				}
 			}, GET, MainActivity.this);
 			break;
@@ -77,11 +86,30 @@ public class MainActivity extends Activity {
 			}
 		}
 	}
-	
-	private DownloadTask downloadTask;
+
+	private FileDownloadTask downloadTask;
 
 	private void downloadFile(String fileUrl) {
-		downloadTask = FileDownloader.download(fileUrl);
+		downloadTask = FileDownloader.download(fileUrl, new DownloadListener() {
+			@Override
+			public void onUpdateProgress(long currentSize, long totalSize, int percent) {
+				if (progressBar.getVisibility() == View.INVISIBLE) {
+					progressBar.setVisibility(View.VISIBLE);
+				}
+				progressBar.setProgress(percent);
+			}
+			
+			@Override
+			public void onStart(String fileUrl) {
+				
+			}
+
+			@Override
+			public void onComplete(File downloadedFile) {
+				Toast.makeText(MainActivity.this, "file success download saved at " + downloadedFile.getAbsolutePath(),
+						1).show();
+			}
+		});
 	}
 
 	private void stringRequest(int method) {
@@ -129,7 +157,7 @@ public class MainActivity extends Activity {
 
 	private void bitmapRequest() {
 		// "http://h.hiphotos.baidu.com/image/w%3D2048/sign=ae39fc65544e9258a63481eea8bad158/4610b912c8fcc3ce64e7dd329045d688d43f208f.jpg";
-		//String url = "http://img10.3lian.com/c1/newpic/10/34/47.jpg";
+		// String url = "http://img10.3lian.com/c1/newpic/10/34/47.jpg";
 		String jay = "http://pic4.nipic.com/20091008/2128360_084655191316_2.jpg";
 		loader.load(jay, image, R.drawable.ic_launcher, R.drawable.error96);
 	}
