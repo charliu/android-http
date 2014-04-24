@@ -34,11 +34,11 @@ public class ImageLoadTask implements Runnable {
 
 	@Override
 	public void run() {
-//		try {
-//			Thread.sleep(500);
-//		} catch (InterruptedException e) {
-//			//
-//		}
+		// try {
+		// Thread.sleep(500);
+		// } catch (InterruptedException e) {
+		// //
+		// }
 		Bitmap bmp = engine.getFromMemoryCache(loadingInfo.cacheKey);
 		if (bmp != null && !bmp.isRecycled()) {
 			engine.post(new DispalyTask(loadingInfo, bmp));
@@ -96,15 +96,11 @@ public class ImageLoadTask implements Runnable {
 		Bitmap bitmap = engine.getFromDiskCache(loadingInfo.cacheKey);
 		if (bitmap != null) {
 			engine.putToMemoryCache(loadingInfo.cacheKey, bitmap);
-			if (Constants.DEBUG) {
-				Log.i(Constants.HTTP_TAG, "Load image from disk cache");
-			}
+			HLog.i("Load image from disk cache");
 			engine.putToMemoryCache(loadingInfo.cacheKey, bitmap);
 			return bitmap;
 		}
-		if (Constants.DEBUG) {
-			Log.i(Constants.HTTP_TAG, "Start download image from internet");
-		}
+		HLog.i("Start download image from internet");
 		Request<Bitmap> request = new BitmapRequest(loadingInfo.uri);
 		HttpResponse httpResponse = httpWorker.doHttpRquest(request);
 		StatusLine statusLine = httpResponse.getStatusLine();

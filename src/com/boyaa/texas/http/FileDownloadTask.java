@@ -14,24 +14,35 @@ import org.apache.http.HttpStatus;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 
+/**
+ * 文件下载任务
+ * {@link #startDownload() 开始下载 }
+ * {@link #stopDownload() 停止下载 }
+ * @author CharLiu
+ *
+ */
 public class FileDownloadTask {
-	private final String fileUrl;
-	private final String tempFileName;
+	private final String fileUrl; //文件url地址
+	private final String tempFileName; //临时文件名称，为fileUrl的md5值
+	private final String fileSavePath; //文件保存路径
 	private final HttpWorker httpWorker;
 	private final DownloadListener downloadListener;
 	private Handler postHandler;
 
 	private Thread downloadThread;
-	private String fileSavePath;
 	private long fileTotalSize = -1;
-	private long downloadedSize = 0;
-	private long readSize = 0;
-	private int currentPercent = 0;
+	private long downloadedTempFileSize = 0; //已下载部分字节数
+	private long readSize = 0; //当前进程下载所读取的字节数
+	private int currentPercent = 0; //下载百分比
 	private volatile boolean stop = false;
 	private String fileName;
 
+	/**
+	 * @param url 文件URL地址
+	 * @param savePath 保存路径
+	 * @param listener 下载过程回调函数，可以为null
+	 */
 	FileDownloadTask(String url, String savePath, DownloadListener listener) {
 		this.fileUrl = url;
 		this.fileSavePath = savePath;
@@ -43,17 +54,27 @@ public class FileDownloadTask {
 			postHandler = new Handler(Looper.getMainLooper());
 		}
 	}
-
+	
+	/**
+	 * 下载回调接口
+	 * @author CharLiu
+	 * {@link #onStart(String) 开始下载}
+	 * {@link #onUpdateProgress(long, long, int) 更新进度}
+	 * {@link #onError(DownloadError) 下载出错}
+	 * {@link #onComplete(File) 下载完成}
+	 */
 	public interface DownloadListener {
 		void onStart(String fileUrl);
 
 		void onUpdateProgress(long currentSize, long totalSize, int percent);
-
+		
 		void onComplete(File downloadedFile);
+		
+		void onError(DownloadError error);
 	}
 
 	/**
-	 * 
+	 * 启动下载
 	 */
 	public void startDownload() {
 		if (downloadListener != null) {
@@ -70,7 +91,8 @@ public class FileDownloadTask {
 			public void run() {
 				download();
 			}
-		});
+		}, "FileDownload thead");
+		
 		downloadThread.start();
 	}
 
@@ -95,9 +117,9 @@ public class FileDownloadTask {
 		Map<String, String> header = new HashMap<String, String>();
 		if (file.exists()) {
 			long downloadStartWith = file.length();
-			downloadedSize = downloadStartWith;
+			downloadedTempFileSize = downloadStartWith;
 			header.put("Range", "bytes=" + downloadStartWith + "-");
-			Log.i(Constants.HTTP_TAG, "Http Range start with:" + downloadStartWith);
+			HLog.i("Http Range start with:" + downloadStartWith);
 		}
 		return header;
 	}
@@ -108,13 +130,12 @@ public class FileDownloadTask {
 	private void download() {
 		File existFile = checkFileExists();
 		if (existFile != null && existFile.exists()) {
-			Log.i(Constants.HTTP_TAG, "File already download");
+			HLog.i("File already download");
 			postDonwloadSuccess(existFile);
 			return;
 		}
-		readSize = 0;
-		currentPercent = 0;
-		downloadedSize = 0;
+		
+		resetSize();
 
 		initSaveFilePath(fileSavePath);
 		String fileTempPath = getSaveFilePath(tempFileName);
@@ -128,12 +149,12 @@ public class FileDownloadTask {
 		try {
 			HttpResponse response = httpWorker.doHttpRquest(request);
 			int statusCode = response.getStatusLine().getStatusCode();
-			Log.i(Constants.HTTP_TAG, "http statusCode:" + statusCode);
+			HLog.i("http statusCode:" + statusCode);
 
 			if (fileTotalSize == -1 && headers.size() == 0) {
 				fileTotalSize = getContentLength(response);
 			}
-			Log.i(Constants.HTTP_TAG, "fileTotalSize:" + fileTotalSize);
+			HLog.i("fileTotalSize:" + fileTotalSize);
 			if (statusCode == HttpStatus.SC_OK || statusCode == HttpStatus.SC_PARTIAL_CONTENT) {
 				stop = false;
 				raf = new RandomAccessFile(downloadTempFile, "rw");
@@ -143,23 +164,24 @@ public class FileDownloadTask {
 				int length = 0;
 				int percent = 0;
 				while (!stop && (length = in.read(buffer)) != -1) {
+					raf.write(buffer, 0, length);
 					readSize += length;
-					long downloadedTotalSize = downloadedSize + readSize;
+					long downloadedTotalSize = downloadedTempFileSize + readSize;
 					currentPercent = (int) ((downloadedTotalSize * 100) / fileTotalSize);
 					if (currentPercent > percent) {
-						Log.i(Constants.HTTP_TAG, "read size:" + downloadedTotalSize + " read percent:"
+						HLog.i("read size:" + downloadedTotalSize + " read percent:"
 								+ currentPercent);
 						postUpdateProgress();
 					}
 					percent = currentPercent;
-					raf.write(buffer, 0, length);
-
 				}
 			} else if (statusCode == HttpStatus.SC_REQUESTED_RANGE_NOT_SATISFIABLE) {
 				badTempFile = true;
 			}
 
 		} catch (IOException e) {
+			stop = true;
+			postError(e);
 			e.printStackTrace();
 		} finally {
 			stop = true;
@@ -171,16 +193,39 @@ public class FileDownloadTask {
 			}
 		}
 		if (downloadTempFile.exists()) {
-			if ((readSize + downloadedSize) == fileTotalSize) {
+			if ((readSize + downloadedTempFileSize) == fileTotalSize) {
 				final File renameFile = createRenameFile(getSaveFilePath(fileName));
 				if (downloadTempFile.renameTo(renameFile)) {
 					postDonwloadSuccess(renameFile);
 				} else {
-					Log.e(Constants.HTTP_TAG, "Rename file failed, name:" + renameFile.getAbsolutePath());
+					HLog.e("Rename file failed, name:" + renameFile.getAbsolutePath());
 				}
 			}
 		}
 
+	}
+	
+	/**
+	 * 重置size
+	 */
+	private void resetSize() {
+		readSize = 0;
+		currentPercent = 0;
+		downloadedTempFileSize = 0;
+	}
+	
+	private void postError(final IOException e) {
+		final DownloadError error = new DownloadError(e, Error.NETWORK_ERROR);
+		error.setFileTotalSize(fileTotalSize);
+		error.setDownloadedSize(readSize + downloadedTempFileSize);
+		if (downloadListener != null) {
+			postHandler.post(new Runnable() {
+				@Override
+				public void run() {
+					downloadListener.onError(error);
+				}
+			});
+		}
 	}
 
 	private void postDonwloadSuccess(final File file) {
@@ -199,7 +244,7 @@ public class FileDownloadTask {
 			postHandler.post(new Runnable() {
 				@Override
 				public void run() {
-					downloadListener.onUpdateProgress(readSize + downloadedSize, fileTotalSize, currentPercent);
+					downloadListener.onUpdateProgress(readSize + downloadedTempFileSize, fileTotalSize, currentPercent);
 				}
 			});
 		}

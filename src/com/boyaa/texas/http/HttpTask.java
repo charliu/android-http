@@ -58,15 +58,11 @@ public class HttpTask implements Runnable {
 					}
 				} else {
 					String errorStr = "Server error";
-					if (Constants.DEBUG) {
-						byte[] data = entityToBytes(httpResponse.getEntity());
-						errorStr += "INFO:" + new String(data);
-					}
 					response = Response.error(new Error(statusCode, errorStr));
 					break;
 				}
 			} catch (IOException e) {
-				if (Constants.DEBUG)
+				if (Constants.LOG_E)
 					e.printStackTrace();
 				response = Response.error(new Error(e, Error.NETWORK_ERROR, "IOException"));
 			}

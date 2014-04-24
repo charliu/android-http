@@ -87,9 +87,7 @@ public class ImageLoader {
 			return;
 		Bitmap cachedBitmap = engine.getFromMemoryCache(cacheKey);
 		if (cachedBitmap != null && !cachedBitmap.isRecycled()) {
-			if (Constants.DEBUG) {
-				Log.d(Constants.HTTP_TAG, "Load Image from memory cache");
-			}
+			HLog.d("Load Image from memory cache");
 			listener.onSuccess(url, imageWrapper.getImageView(), cachedBitmap);
 			return;
 		}

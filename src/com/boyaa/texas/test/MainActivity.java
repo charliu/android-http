@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.boyaa.texas.http.DownloadError;
 import com.boyaa.texas.http.FileDownloadTask;
 import com.boyaa.texas.http.FileDownloadTask.DownloadListener;
 import com.boyaa.texas.http.FileDownloader;
@@ -33,6 +34,7 @@ public class MainActivity extends Activity {
 	private static final int POST = 2;
 	private BusinessModel model;
 	private ProgressBar progressBar;
+	private FileDownloadTask downloadTask;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -75,21 +77,24 @@ public class MainActivity extends Activity {
 			startActivity(intent);
 			break;
 		case R.id.file_download:
-			if (downloadTask == null) {
-				downloadFile("http://gdown.baidu.com/data/wisegame/e1e4baae4d20464c/aiqiyishipin_79.apk");
+			downloadFile();
+			break;
+		}
+	}
+
+	private void downloadFile() {
+		if (downloadTask == null) {
+			createDownloadTask("http://gdown.baidu.com/data/wisegame/0a02d66ad2e3e7a8/aimei_2014031801.apk");
+		} else {
+			if (downloadTask.isStoped()) {
+				downloadTask.startDownload();
 			} else {
-				if (downloadTask.isStoped()) {
-					downloadTask.startDownload();
-				} else {
-					downloadTask.stopDownload();
-				}
+				downloadTask.stopDownload();
 			}
 		}
 	}
 
-	private FileDownloadTask downloadTask;
-
-	private void downloadFile(String fileUrl) {
+	private void createDownloadTask(String fileUrl) {
 		downloadTask = FileDownloader.download(fileUrl, new DownloadListener() {
 			@Override
 			public void onUpdateProgress(long currentSize, long totalSize, int percent) {
@@ -98,16 +103,21 @@ public class MainActivity extends Activity {
 				}
 				progressBar.setProgress(percent);
 			}
-			
+
 			@Override
 			public void onStart(String fileUrl) {
-				
+
 			}
 
 			@Override
 			public void onComplete(File downloadedFile) {
 				Toast.makeText(MainActivity.this, "file success download saved at " + downloadedFile.getAbsolutePath(),
 						1).show();
+			}
+
+			@Override
+			public void onError(DownloadError error) {
+				Toast.makeText(MainActivity.this, "on error:" + error.getDownloadedSize(), 1).show();
 			}
 		});
 	}
