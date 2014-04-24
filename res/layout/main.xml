@@ -3,54 +3,77 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".MainActivity" >
+    tools:context=".TestActivity" >
 
-    <Button
-        android:id="@+id/stringRequestGet"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="onClickButton"
-        android:text="String Request GET" />
-    <Button
-        android:id="@+id/stringRequestPost"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="onClickButton"
-        android:text="String Request POST" />
-    <Button
-        android:id="@+id/pojoRequest"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="onClickButton"
-        android:text="pojo request" />
-    <Button
-        android:id="@+id/bitmapRequest"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="onClickButton"
-        android:text="bitmap request" />
-    <Button
-        android:id="@+id/img_list_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="onClickButton"
-        android:text="img_list_view" />
-    <Button
-        android:id="@+id/file_download"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="onClickButton"
-        android:text="FileDownload" />
-    
-    <ImageView 
-        android:id="@+id/image"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-
-    <ProgressBar
-        android:id="@+id/progressBar"
-        style="?android:attr/progressBarStyleHorizontal"
+    <ScrollView
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content" />
-    
+        android:layout_height="fill_parent" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical" >
+
+            <Button
+                android:id="@+id/stringRequestGet"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:onClick="onClickButton"
+                android:text="String Request GET" />
+
+            <Button
+                android:id="@+id/stringRequestPost"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:onClick="onClickButton"
+                android:text="String Request POST" />
+            <Button
+                android:id="@+id/jsonRequest"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:onClick="onClickButton"
+                android:text="Json Request" />
+
+            <Button
+                android:id="@+id/pojoRequest"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:onClick="onClickButton"
+                android:text="Pojo Request" />
+
+            <Button
+                android:id="@+id/bitmapRequest"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:onClick="onClickButton"
+                android:text="Bitmap Request" />
+
+            <Button
+                android:id="@+id/img_list_view"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:onClick="onClickButton"
+                android:text="LoadListImage" />
+
+            <Button
+                android:id="@+id/file_download"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:onClick="onClickButton"
+                android:text="FileDownload" />
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content" />
+
+            <ImageView
+                android:id="@+id/image"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center" />
+        </LinearLayout>
+    </ScrollView>
+
 </LinearLayout>

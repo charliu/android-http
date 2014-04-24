@@ -13,7 +13,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-public class ListViewTest extends Activity {
+public class ListImageActivity extends Activity {
 	private ListView listView;
 
 	private ImageLoader loader = ImageLoader.getInstance();
@@ -191,7 +191,7 @@ public class ListViewTest extends Activity {
 		public View getView(int position, View convertView, ViewGroup parent) {
 			final ViewHolder holder;
 			if (convertView == null) {
-				convertView = LayoutInflater.from(ListViewTest.this).inflate(R.layout.list_item, null);
+				convertView = LayoutInflater.from(ListImageActivity.this).inflate(R.layout.list_item, null);
 				holder = new ViewHolder();
 				holder.image = (ImageView) convertView.findViewById(R.id.image_view);
 				holder.text = (TextView) convertView.findViewById(R.id.text_view);

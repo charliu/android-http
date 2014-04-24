@@ -36,6 +36,7 @@ public class FileDownloadTask {
 	private int currentPercent = 0; // 下载百分比
 	private volatile boolean stop = false;
 	private String fileName;
+	private boolean isCompleted = false;
 
 	/**
 	 * @param url
@@ -70,9 +71,14 @@ public class FileDownloadTask {
 
 		void onUpdateProgress(long currentSize, long totalSize, int percent);
 
-		void onComplete(File downloadedFile);
+		void onComplete(File downloadedFile, FileFrom from);
 
 		void onError(DownloadError error);
+	}
+	
+	public enum FileFrom {
+		INTERNET,
+		SDCARD
 	}
 
 	/**
@@ -109,6 +115,10 @@ public class FileDownloadTask {
 	public boolean isStoped() {
 		return stop;
 	}
+	
+	public boolean isCompleted() {
+		return isCompleted;
+	}
 
 	private String getFileName(String fileUrl) {
 		return fileUrl.substring(fileUrl.lastIndexOf(File.separator));
@@ -136,7 +146,7 @@ public class FileDownloadTask {
 		File existFile = checkFileExists();
 		if (existFile != null && existFile.exists()) {
 			HLog.i("File already download");
-			postDonwloadSuccess(existFile);
+			postDonwloadSuccess(existFile, FileFrom.SDCARD);
 			return;
 		}
 
@@ -208,7 +218,8 @@ public class FileDownloadTask {
 			if ((readSize + downloadedTempFileSize) == fileTotalSize) {
 				final File renameFile = createRenameFile(getSaveFileAbsolutePath(fileName));
 				if (downloadTempFile.renameTo(renameFile)) {
-					postDonwloadSuccess(renameFile);
+					isCompleted = true;
+					postDonwloadSuccess(renameFile, FileFrom.INTERNET);
 				} else {
 					HLog.e("Rename file failed, name:" + renameFile.getAbsolutePath());
 				}
@@ -240,12 +251,12 @@ public class FileDownloadTask {
 		}
 	}
 
-	private void postDonwloadSuccess(final File file) {
+	private void postDonwloadSuccess(final File file, final FileFrom from) {
 		if (downloadListener != null) {
 			postHandler.post(new Runnable() {
 				@Override
 				public void run() {
-					downloadListener.onComplete(file);
+					downloadListener.onComplete(file, from);
 				}
 			});
 		}

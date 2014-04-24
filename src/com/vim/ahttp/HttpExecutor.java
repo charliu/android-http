@@ -36,7 +36,7 @@ public class HttpExecutor {
 		HTTP_THREAD_POOL_EXECUTOR.execute(task);
 	}
 
-	public static void execute(Context context, Request<?> request, boolean showProgressBar) {
+	public static void execute(Request<?> request, Context context, boolean showProgressBar) {
 		request.dialog = createLoadingDialog(context, request);
 		HttpTask task = new HttpTask(request, mPoster, mHttpWorker);
 		if (showProgressBar) {
