@@ -27,14 +27,14 @@ public abstract class Request<T> {
 
 	private static String DEFAULT_PARAMS_ENCODING = "UTF-8";
 
-	private final String mUrl;
-	private Map<String, String> mHeaders;  //HTTP 头部
-	private Map<String, String> mParams;   //HTTP 参数
+	protected final String mUrl;
+	protected Map<String, String> mHeaders;  //HTTP 头部
+	protected Map<String, String> mParams;   //HTTP 参数
 	protected final ResponseListener<T> mResponseListener; //HTTP请求回调
 	public int mMethod = RequestMethod.GET; // Reuqest Method
 	public Dialog dialog;
-	private String paramsEncoding = DEFAULT_PARAMS_ENCODING;
-	private boolean cancel = false;
+	protected String paramsEncoding = DEFAULT_PARAMS_ENCODING;
+	protected boolean cancel = false;
 
 	public boolean isCancled() {
 		return cancel;

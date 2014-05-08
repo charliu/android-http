@@ -39,8 +39,7 @@ public class ImageLoadTask implements Runnable {
 			engine.cancelDisplayTaskFor(loadingInfo.imageWrapper);
 			return;
 		}
-		if (taskNotActual()) {
-			HLog.d("Loading task canceled");
+		if (taskNotActual("BeforeLoad")) {
 			return;
 		}
 		ReentrantLock loadLock = loadingInfo.mLock;
@@ -48,9 +47,10 @@ public class ImageLoadTask implements Runnable {
 		Bitmap bitmap = null;
 		try {
 			bitmap = loadBitmap();
-			if (taskNotActual())
+			if (taskNotActual("AfterLoad"))
 				return;
 		} catch (Exception e) {
+			HLog.e(e.getMessage());
 			bitmap = null;
 		} finally {
 			loadLock.unlock();
@@ -71,8 +71,7 @@ public class ImageLoadTask implements Runnable {
 		@Override
 		public void run() {
 
-			if (taskNotActual()) {
-				HLog.e("display reused, cancel!!!");
+			if (taskNotActual("DisplayTask")) {
 				return;
 			}
 			engine.cancelDisplayTaskFor(info.imageWrapper);
@@ -90,11 +89,10 @@ public class ImageLoadTask implements Runnable {
 		Bitmap bitmap = engine.getFromDiskCache(loadingInfo.cacheKey);
 		if (bitmap != null) {
 			engine.putToMemoryCache(loadingInfo.cacheKey, bitmap);
-			HLog.i("Load image from disk cache");
-			engine.putToMemoryCache(loadingInfo.cacheKey, bitmap);
+			HLog.i("Load image from disk cache in SubThread, URL:" + loadingInfo.uri);
 			return bitmap;
 		}
-		HLog.i("Start download image from internet");
+		HLog.i("Starting download, URL:" + loadingInfo.uri);
 		Request<Bitmap> request = new BitmapRequest(loadingInfo.uri);
 		HttpResponse httpResponse = httpWorker.doHttpRquest(request);
 		StatusLine statusLine = httpResponse.getStatusLine();
@@ -114,7 +112,9 @@ public class ImageLoadTask implements Runnable {
 					// Do nothing
 				}
 			}
-			if (bitmap != null) {
+			if (bitmap == null) {
+				HLog.e("Image can't be decode, URL:" + loadingInfo.uri);
+			} else {
 				engine.putToMemoryCache(loadingInfo.cacheKey, bitmap);
 				engine.putToDiskCache(loadingInfo.cacheKey, bitmap);
 				return bitmap;
@@ -123,9 +123,16 @@ public class ImageLoadTask implements Runnable {
 		return null;
 	}
 
-	private boolean taskNotActual() {
-		return loadingInfo.imageWrapper.isCollected()
-				|| engine.isReused(loadingInfo.imageWrapper, loadingInfo.cacheKey);
+	private boolean taskNotActual(String logPrefix) {
+		if (loadingInfo.imageWrapper.isCollected()) {
+			HLog.w(logPrefix + " ImageView is collected");
+			return true;
+		}
+		if (engine.isReused(loadingInfo.imageWrapper, loadingInfo.cacheKey)) {
+			HLog.w(logPrefix + " ImageView is reused");
+			return true;
+		}
+		return false;
 	}
 
 }

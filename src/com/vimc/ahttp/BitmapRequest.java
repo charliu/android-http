@@ -39,9 +39,11 @@ public class BitmapRequest extends Request<Bitmap> {
 				if (bitmap != null) {
 					return Response.success(bitmap);
 				} else {
+					HLog.e("Decode bitmap fail, URL:" + mUrl);
 					return Response.error(new Error(Error.PARSE_ERROR, "Decode bitmap fail"));
 				}
 			} catch (OutOfMemoryError e) {
+				HLog.e(e.getMessage());
 				return Response.error(new Error(e, Error.PARSE_ERROR, "Parse OutOfMemoryError"));
 			}
 		}

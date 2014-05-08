@@ -43,14 +43,14 @@ public class ImageLoader {
 			if (file.mkdirs()) {
 				return file;
 			} else {
-				HLog.e("create disk cache dir fail");
+				HLog.e("Create disk cache dir fail");
 			}
 		}
 		return file;
 	}
 
 	private ImageLoader(Cache<Bitmap> memoryCache, Cache<Bitmap> diskCache) {
-		engine = new ImageLoaderEngine(memoryCache, diskCache);
+		engine = new ImageLoaderEngine(memoryCache, null);//TODO kdjfklsj
 		mHttpWorker = HttpWorkerFactory.createHttpWorker();
 	}
 
@@ -86,7 +86,7 @@ public class ImageLoader {
 			return;
 		Bitmap cachedBitmap = engine.getFromMemoryCache(cacheKey);
 		if (cachedBitmap != null && !cachedBitmap.isRecycled()) {
-			HLog.d("Load Image from memory cache");
+			HLog.d("Load Image from memory cache in MainThread");
 			listener.onSuccess(url, imageWrapper.getImageView(), cachedBitmap);
 			return;
 		}

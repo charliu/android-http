@@ -14,22 +14,27 @@ public class HLog {
 			Log.d(Constants.HTTP_TAG, msg);
 		}
 	}
+	public static void w(String msg) {
+		if (Constants.LOG_W) {
+			Log.w(Constants.HTTP_TAG, msg);
+		}
+	}
 
 	public static void v(String msg) {
 		if (Constants.LOG_V) {
-			Log.d(Constants.HTTP_TAG, msg);
+			Log.v(Constants.HTTP_TAG, msg);
 		}
 	}
 
 	public static void e(String msg) {
 		if (Constants.LOG_E) {
-			Log.d(Constants.HTTP_TAG, msg);
+			Log.e(Constants.HTTP_TAG, msg);
 		}
 	}
 	
 	public static void i(String msg) {
 		if (Constants.LOG_I) {
-			Log.d(Constants.HTTP_TAG, msg);
+			Log.i(Constants.HTTP_TAG, msg);
 		}
 	}
 

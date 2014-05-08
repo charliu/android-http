@@ -6,4 +6,5 @@ public class Constants {
 	public static final boolean LOG_D = true;
 	public static final boolean LOG_I = true;
 	public static final boolean LOG_E = true;
+	public static final boolean LOG_W = true;
 }
