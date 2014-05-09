@@ -22,6 +22,8 @@ public class ResponsePoster {
 	}
 
 	void dispatchResponse(Request<?> request, Response<?> response) {
+		if (request.isCancled())
+			return;
 		responsePoster.execute(new ResponsePosterRunnable(request, response));
 	}
 

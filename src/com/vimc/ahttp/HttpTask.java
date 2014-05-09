@@ -61,12 +61,12 @@ public class HttpTask implements Runnable {
 					break;
 				}
 			} catch (IOException e) {
-				if (Constants.LOG_E)
+				if (LogConfig.LOG_E)
 					e.printStackTrace();
 				response = Response.error(new Error(e, Error.NETWORK_ERROR, "IOException"));
 			}
 		}
-		if (!request.isCancled()) {
+		if (!request.isCancled() && !isInterrupted()) {
 			mPoster.dispatchResponse(request, response);
 		}
 	}

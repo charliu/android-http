@@ -10,31 +10,31 @@ import android.util.Log;
 public class HLog {
 
 	public static void d(String msg) {
-		if (Constants.LOG_D) {
-			Log.d(Constants.HTTP_TAG, msg);
+		if (LogConfig.LOG_D) {
+			Log.d(LogConfig.HTTP_TAG, msg);
 		}
 	}
 	public static void w(String msg) {
-		if (Constants.LOG_W) {
-			Log.w(Constants.HTTP_TAG, msg);
+		if (LogConfig.LOG_W) {
+			Log.w(LogConfig.HTTP_TAG, msg);
 		}
 	}
 
 	public static void v(String msg) {
-		if (Constants.LOG_V) {
-			Log.v(Constants.HTTP_TAG, msg);
+		if (LogConfig.LOG_V) {
+			Log.v(LogConfig.HTTP_TAG, msg);
 		}
 	}
 
 	public static void e(String msg) {
-		if (Constants.LOG_E) {
-			Log.e(Constants.HTTP_TAG, msg);
+		if (LogConfig.LOG_E) {
+			Log.e(LogConfig.HTTP_TAG, msg);
 		}
 	}
 	
 	public static void i(String msg) {
-		if (Constants.LOG_I) {
-			Log.i(Constants.HTTP_TAG, msg);
+		if (LogConfig.LOG_I) {
+			Log.i(LogConfig.HTTP_TAG, msg);
 		}
 	}
 

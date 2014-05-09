@@ -94,6 +94,9 @@ public class TestActivity extends Activity {
 			Intent intent = new Intent(TestActivity.this, ListImageActivity.class);
 			startActivity(intent);
 			break;
+		case R.id.img_grid_view:
+			startActivity(new Intent(TestActivity.this, GridImageActivity.class));
+			break;
 		case R.id.file_download:
 			downloadFile();
 			break;

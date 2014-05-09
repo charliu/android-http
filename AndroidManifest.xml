@@ -29,6 +29,9 @@
         
         <activity 
             android:name="com.vimc.android.ListImageActivity"></activity>
+        <activity 
+            android:name="com.vimc.android.GridImageActivity"></activity>
+        
     </application>
 
 </manifest>

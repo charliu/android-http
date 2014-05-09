@@ -176,9 +176,9 @@ public class ImgUrls {
 
 	public static String[] getSmall(int size) {
 		String[] array = new String[size];
-		String baseUrl = "http://cdn-img.easyicon.net/png/11350/";
+		String baseUrl = "http://cdn-img.easyicon.net/png/11274/";
 		int j = 0;
-		for (int i = 1135000; i < 1135000 + size; i++) {
+		for (int i = 1127400; i < 1127400 + size; i++) {
 			array[j] = baseUrl + i + ".png";
 			j++;
 		}

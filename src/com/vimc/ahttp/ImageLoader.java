@@ -92,7 +92,7 @@ public class ImageLoader {
 		final String cacheKey = MD5Util.generateMD5(url);
 		Bitmap cachedBitmap = engine.getFromMemoryCache(cacheKey);
 		if (cachedBitmap != null && !cachedBitmap.isRecycled()) {
-			HLog.d("Load Image from memory cache in MainThread");
+			HLog.d("Load Image from memory in MainThread, URL:" + url);
 			listener.onSuccess(url, imageWrapper.getImageView(), cachedBitmap);
 			engine.cancelDisplayTaskFor(imageWrapper);
 			return;

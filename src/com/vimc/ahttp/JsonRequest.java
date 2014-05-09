@@ -25,7 +25,8 @@ public class JsonRequest extends Request<JSONObject>{
 			String jsonStr = new String(data);
 			return Response.success(new JSONObject(jsonStr));
 		} catch (JSONException e) {
-			e.printStackTrace();
+			if (LogConfig.LOG_E)
+				e.printStackTrace();
 			return Response.error(new Error(e, Error.PARSE_ERROR, "Parse json fail"));
 		}
 		

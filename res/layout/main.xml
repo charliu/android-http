@@ -53,7 +53,13 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:onClick="onClickButton"
-                android:text="LoadListImage" />
+                android:text="LoadListImages" />
+            <Button
+                android:id="@+id/img_grid_view"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:onClick="onClickButton"
+                android:text="LoadGridImages" />
 
             <Button
                 android:id="@+id/file_download"

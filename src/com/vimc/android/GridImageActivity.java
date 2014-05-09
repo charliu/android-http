@@ -1,5 +1,6 @@
 package com.vimc.android;
 
+import com.vimc.ahttp.HLog;
 import com.vimc.ahttp.R;
 import com.vimc.ahttp.ImageLoader;
 
@@ -9,22 +10,21 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.GridView;
 import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.TextView;
 
-public class ListImageActivity extends Activity {
-	private ListView listView;
+public class GridImageActivity extends Activity {
+	private GridView gridView;
 
-	public static final String[] IMAGES = ImgUrls.getSmall(100);
+	public static final String[] IMAGES = ImgUrls.getBig(150);
 	
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.list);
-		listView = (ListView) findViewById(R.id.list_view);
-		listView.setAdapter(new MyAdapter());
+		setContentView(R.layout.grid);
+		gridView = (GridView) findViewById(R.id.gridview);
+		gridView.setAdapter(new MyAdapter());
 	}
 
 	private class MyAdapter extends BaseAdapter {
@@ -50,26 +50,22 @@ public class ListImageActivity extends Activity {
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
 			final ViewHolder holder;
-//			HLog.i("GetView position:" + position + " URL:" + IMAGES[position]);
+			HLog.i("GetView position:" + position + " URL:" + IMAGES[position]);
 			if (convertView == null) {
-				convertView = LayoutInflater.from(ListImageActivity.this).inflate(R.layout.list_item, null);
+				convertView = LayoutInflater.from(GridImageActivity.this).inflate(R.layout.grid_item, null);
 				holder = new ViewHolder();
-				holder.image = (ImageView) convertView.findViewById(R.id.image_view);
-				holder.text = (TextView) convertView.findViewById(R.id.text_view);
+				holder.image = (ImageView) convertView.findViewById(R.id.img);
 				convertView.setTag(holder);
 			} else {
 				holder = (ViewHolder) convertView.getTag();
 			}
 			String requestUrl = IMAGES[position];
 			ImageLoader.getInstance().load(requestUrl, holder.image, R.drawable.ps_96);
-
-			holder.text.setText("hello world " + position);
 			return convertView;
 		}
 
 		class ViewHolder {
 			ImageView image;
-			TextView text;
 		}
 
 	}
