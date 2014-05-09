@@ -19,7 +19,7 @@ public class ListImageActivity extends Activity {
 
 	private ImageLoader loader = ImageLoader.getInstance();
 
-	public static final String[] IMAGES = ImgUrls.getSmall(20);
+	public static final String[] IMAGES = ImgUrls.IMAGES;
 	
 	private ImageView img;
 
@@ -31,7 +31,7 @@ public class ListImageActivity extends Activity {
 		listView.setAdapter(new MyAdapter());
 		img = (ImageView) findViewById(R.id.img);
 		String u = "http://cdn.urbanislandz.com/wp-content/uploads/2011/10/MMSposter-large.jpg";
-		String ur = "http://image.donga.com/mlbpark/fileUpload/201401/52dde15113c53b01da3b.jpg";
+		String ur = "http://h.hiphotos.baidu.com/image/h%3D1050%3Bcrop%3D0%2C0%2C1680%2C1050/sign=9de70dbcd5ca7bcb627bc32f8b395000/83025aafa40f4bfb1404aa2b014f78f0f63618fc.jpg";
 		ImageLoader.getInstance().load(ur, img, R.drawable.ps_96);
 	}
 
@@ -58,7 +58,7 @@ public class ListImageActivity extends Activity {
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
 			final ViewHolder holder;
-			HLog.i("GetView position:" + position + " URL:" + IMAGES[position]);
+//			HLog.i("GetView position:" + position + " URL:" + IMAGES[position]);
 			if (convertView == null) {
 				convertView = LayoutInflater.from(ListImageActivity.this).inflate(R.layout.list_item, null);
 				holder = new ViewHolder();

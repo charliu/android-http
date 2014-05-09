@@ -24,7 +24,10 @@ public class ImageLoader {
 	private volatile static ImageLoader instance;
 
 	private static String DEFAULT_DISK_CACHE_DIR = "texas" + File.separator + ".Cache";
-
+	
+	private Cache<Bitmap> memoryCache;
+	private Cache<Bitmap> diskCache;
+	
 	public static ImageLoader getInstance() {
 		if (instance == null) {
 			synchronized (ImageLoader.class) {
@@ -50,7 +53,9 @@ public class ImageLoader {
 	}
 
 	private ImageLoader(Cache<Bitmap> memoryCache, Cache<Bitmap> diskCache) {
-		engine = new ImageLoaderEngine(memoryCache, null);//TODO kdjfklsj
+		this.memoryCache = memoryCache;
+		this.diskCache = diskCache;
+		engine = new ImageLoaderEngine(memoryCache, diskCache);
 		mHttpWorker = HttpWorkerFactory.createHttpWorker();
 	}
 
@@ -76,18 +81,20 @@ public class ImageLoader {
 	public void load(final String imageUrl, ImageView view, final ImageLoadListener listener) {
 		load(imageUrl, new ImageViewWrapper(view), listener);
 	}
-
+	
 	private void load(final String url, final ImageViewWrapper imageWrapper, final ImageLoadListener listener) {
 		throwIfNotInMainThread();
-
-		final String cacheKey = MD5Util.generateMD5(url);
-
-		if (TextUtils.isEmpty(url))
+		if (TextUtils.isEmpty(url)) {
+			engine.cancelDisplayTaskFor(imageWrapper);
 			return;
+		}
+		
+		final String cacheKey = MD5Util.generateMD5(url);
 		Bitmap cachedBitmap = engine.getFromMemoryCache(cacheKey);
 		if (cachedBitmap != null && !cachedBitmap.isRecycled()) {
 			HLog.d("Load Image from memory cache in MainThread");
 			listener.onSuccess(url, imageWrapper.getImageView(), cachedBitmap);
+			engine.cancelDisplayTaskFor(imageWrapper);
 			return;
 		}
 		listener.onSuccess(url, imageWrapper.imageViewRef.get(), null);
@@ -159,5 +166,15 @@ public class ImageLoader {
 		options.inPurgeable = true;
 		options.inInputShareable = true;
 		return options;
+	}
+	
+	public void clearMemoryCache() {
+		if (memoryCache != null)
+			memoryCache.clear();
+	}
+	
+	public void clearDiskCache() {
+		if (diskCache != null)
+			diskCache.clear();
 	}
 }

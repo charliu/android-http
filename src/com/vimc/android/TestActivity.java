@@ -28,6 +28,10 @@ import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
 import android.util.Log;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -210,4 +214,28 @@ public class TestActivity extends Activity {
 		String jay = "http://pic4.nipic.com/20091008/2128360_084655191316_2.jpg";
 		loader.load(jay, image, R.drawable.ps_96, R.drawable.error96);
 	}
+
+	@Override
+	public boolean onMenuItemSelected(int featureId, MenuItem item) {
+		switch(item.getItemId()) {
+		case 1:
+			ImageLoader.getInstance().clearMemoryCache();
+			break;
+		case 2:
+			ImageLoader.getInstance().clearDiskCache();
+			break;
+		}
+		return super.onMenuItemSelected(featureId, item);
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		menu.add(Menu.NONE, 1, 1, "Clear Memory Cache");
+		menu.add(Menu.NONE, 2, 1, "Clear Disk Cache");
+		return super.onCreateOptionsMenu(menu);
+	}
+
+	
+	
+	
 }

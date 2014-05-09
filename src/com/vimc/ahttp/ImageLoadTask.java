@@ -33,19 +33,21 @@ public class ImageLoadTask implements Runnable {
 
 	@Override
 	public void run() {
-		Bitmap bmp = engine.getFromMemoryCache(loadingInfo.cacheKey);
-		if (bmp != null && !bmp.isRecycled()) {
-			engine.post(new DispalyTask(loadingInfo, bmp));
-			engine.cancelDisplayTaskFor(loadingInfo.imageWrapper);
-			return;
-		}
-		if (taskNotActual("BeforeLoad")) {
-			return;
-		}
 		ReentrantLock loadLock = loadingInfo.mLock;
+		if (loadLock.isLocked()) {
+			HLog.w("LoadLock locked URL:" + loadingInfo.uri);
+		}
 		loadLock.lock();
+		
 		Bitmap bitmap = null;
 		try {
+			if (taskNotActual("BeforeLoad"))
+				return;
+			bitmap = engine.getFromMemoryCache(loadingInfo.cacheKey);
+			if (bitmap != null && !bitmap.isRecycled()) {
+				engine.post(new DispalyTask(loadingInfo, bitmap));
+				return;
+			}
 			bitmap = loadBitmap();
 			if (taskNotActual("AfterLoad"))
 				return;
@@ -55,7 +57,6 @@ public class ImageLoadTask implements Runnable {
 		} finally {
 			loadLock.unlock();
 		}
-
 		engine.post(new DispalyTask(loadingInfo, bitmap));
 	}
 

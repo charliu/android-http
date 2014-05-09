@@ -176,11 +176,20 @@ public class ImgUrls {
 
 	public static String[] getSmall(int size) {
 		String[] array = new String[size];
-		String baseUrl = "http://cdn-img.easyicon.net/png/11352/";
+		String baseUrl = "http://cdn-img.easyicon.net/png/11350/";
 		int j = 0;
-		for (int i = 1135210; i < 1135210 + size; i++) {
+		for (int i = 1135050; i < 1135050 + size; i++) {
 			array[j] = baseUrl + i + ".png";
 			j++;
+		}
+		return array;
+	}
+	
+	public static String[] getSame(int size) {
+		String[] array = new String[size];
+		String url = "http://cdn-img.easyicon.net/png/11350/1135057.png";
+		for (int i = 0; i < size; i++) {
+			array[i] = url;
 		}
 		return array;
 	}

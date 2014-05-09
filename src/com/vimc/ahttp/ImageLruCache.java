@@ -48,6 +48,7 @@ public class ImageLruCache extends Cache<Bitmap> {
 
 	@Override
 	void clear() {
+		bitmapCache.trimToSize(0);
 	}
 
 }
