@@ -24,7 +24,7 @@ public class ImageLoaderEngine {
 	private Cache<Bitmap> memoryCache;
 	private Cache<Bitmap> diskCache;
 	private static final int CORE_POOL_SIZE = 5;
-	private static final int MAXIMUM_POOL_SIZE = 64;
+	private static final int MAXIMUM_POOL_SIZE = 128;
 
 	private Handler mHandler = new Handler(Looper.getMainLooper());
 

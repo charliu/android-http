@@ -19,7 +19,7 @@ public class ListImageActivity extends Activity {
 
 	private ImageLoader loader = ImageLoader.getInstance();
 
-	public static final String[] IMAGES = ImgUrls.IMAGES;
+	public static final String[] IMAGES = ImgUrls.getSmall(100);
 	
 	private ImageView img;
 

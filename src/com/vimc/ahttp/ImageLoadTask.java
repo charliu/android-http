@@ -116,6 +116,7 @@ public class ImageLoadTask implements Runnable {
 			if (bitmap == null) {
 				HLog.e("Image can't be decode, URL:" + loadingInfo.uri);
 			} else {
+				HLog.i("Download Success, URL:" + loadingInfo.uri);
 				engine.putToMemoryCache(loadingInfo.cacheKey, bitmap);
 				engine.putToDiskCache(loadingInfo.cacheKey, bitmap);
 				return bitmap;
