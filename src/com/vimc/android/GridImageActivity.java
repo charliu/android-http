@@ -60,7 +60,7 @@ public class GridImageActivity extends Activity {
 				holder = (ViewHolder) convertView.getTag();
 			}
 			String requestUrl = IMAGES[position];
-			ImageLoader.getInstance().load(requestUrl, holder.image, R.drawable.ps_96);
+			ImageLoader.getInstance().load(requestUrl, holder.image, R.drawable.android);
 			return convertView;
 		}
 

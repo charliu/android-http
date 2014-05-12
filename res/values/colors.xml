@@ -14,18 +14,9 @@
 ** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
-*/
+*/
 -->
 
 <resources>
-
-    <!--  -->
-    <color name="pc_dark_grey">#333333</color>
-    <color name="pc_gray">#666666</color>
-    <color name="pc_light_gray">#999999</color>
-    <color name="pc_blue">#1987de</color>
-    <color name="pc_orange">#ff6600</color>
-    <!--  -->
-    <color name="drawer_line">#b1bac1</color>
 
 </resources>

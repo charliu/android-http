@@ -4,10 +4,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.ReentrantLock;
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
@@ -15,7 +13,7 @@ import android.os.Handler;
 import android.os.Looper;
 
 /**
- * Image加载引擎，负责缓存，线程池管理
+ * Image加载引擎，负责缓存，图片加载线程池管理
  * 
  * @author CharLiu
  * 
@@ -32,7 +30,7 @@ public class ImageLoaderEngine {
 	private final Map<Integer, String> cacheKeysForImageViewWrapper = Collections
 			.synchronizedMap(new HashMap<Integer, String>());
 
-	private final Executor THREAD_POOL_EXECUTOR;
+	private final Executor networkExecutor;
 	private final Executor taskDistributor;
 
 	private final Map<String, ReentrantLock> uriLocks = new WeakHashMap<String, ReentrantLock>();
@@ -40,17 +38,17 @@ public class ImageLoaderEngine {
 	public ImageLoaderEngine(Cache<Bitmap> memoryCache, Cache<Bitmap> diskCache) {
 		this.memoryCache = memoryCache;
 		this.diskCache = diskCache;
-		BlockingQueue<Runnable> taskQueue = new LinkedBlockingQueue<Runnable>();
+		
 		taskDistributor = Executors.newCachedThreadPool();
-		THREAD_POOL_EXECUTOR = ExecutorFactory.createExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE,
-				Thread.NORM_PRIORITY - 1, taskQueue);
+		networkExecutor = ExecutorFactory.createExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE,
+				Thread.NORM_PRIORITY - 1);
 	}
 
 	public void submit(final Runnable task) {
 		taskDistributor.execute(new Runnable() {
 			@Override
 			public void run() {
-				THREAD_POOL_EXECUTOR.execute(task);
+				networkExecutor.execute(task);
 			}
 		});
 

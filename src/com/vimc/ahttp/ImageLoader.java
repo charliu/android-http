@@ -11,7 +11,8 @@ import android.text.TextUtils;
 import android.widget.ImageView;
 
 /**
- * Image加载类，单例 {@link #load(String, ImageView) #load(String, ImageView, ImageLoadListener)}
+ * Image加载类，单例 {@link #load(String, ImageView) #load(String, ImageView,
+ * ImageLoadListener)}
  * 
  * @author CharLiu
  */
@@ -19,58 +20,105 @@ public class ImageLoader {
 
 	private ImageLoaderEngine engine;
 
-	private final HttpWorker mHttpWorker;
+	private HttpWorker mHttpWorker;
 
 	private volatile static ImageLoader instance;
 
 	private static String DEFAULT_DISK_CACHE_DIR = "texas" + File.separator + ".Cache";
-	
+	private static final int DEFAULT_MEMORY_CACHE_SIZE = (int) (Runtime.getRuntime().maxMemory() / (1024 * 8));
+
 	private Cache<Bitmap> memoryCache;
 	private Cache<Bitmap> diskCache;
-	
-	public static ImageLoader getInstance() {
-		if (instance == null) {
-			synchronized (ImageLoader.class) {
-				if (instance == null) {
-					instance = new ImageLoader(new ImageLruCache(), new ImageDiskCache(getDefaultDiskCacheDir()));
-				}
-			}
-		}
-		return instance;
-	}
+	private ImageLoaderConfig loadConfig = null;
+	private boolean inited = false;
 
-	private static File getDefaultDiskCacheDir() {
-		String sdCard = Environment.getExternalStorageDirectory().getAbsolutePath();
-		File file = new File(sdCard + File.separator + DEFAULT_DISK_CACHE_DIR);
-		if (!file.exists()) {
-			if (file.mkdirs()) {
-				return file;
-			} else {
-				HLog.e("Create disk cache dir fail");
-			}
-		}
-		return file;
-	}
-
-	private ImageLoader(Cache<Bitmap> memoryCache, Cache<Bitmap> diskCache) {
-		this.memoryCache = memoryCache;
-		this.diskCache = diskCache;
-		engine = new ImageLoaderEngine(memoryCache, diskCache);
-		mHttpWorker = HttpWorkerFactory.createHttpWorker();
-	}
-
+	/**
+	 * 图片加载回调listener
+	 */
 	public interface ImageLoadListener {
 		void onSuccess(String imageUrl, ImageView imageView, Bitmap bitmap);
 
 		void onError(Error error);
 	}
 
+	private ImageLoader() {
+	}
+
+	public static ImageLoader getInstance() {
+		if (instance == null) {
+			synchronized (ImageLoader.class) {
+				if (instance == null) {
+					instance = new ImageLoader();
+				}
+			}
+		}
+		return instance;
+	}
+
+	public void init(ImageLoaderConfig config) {
+		if (TextUtils.isEmpty(config.diskCacheDir) || config.decodeOptions == null || config.memoryCacheSize < 0) {
+			throw new IllegalArgumentException("config must be set all attributes");
+		}
+		loadConfig = config;
+		if (this.memoryCache == null) {
+			this.memoryCache = new ImageLruCache(loadConfig.memoryCacheSize);
+		}
+		if (this.diskCache == null) {
+			this.diskCache = new ImageDiskCache(createDiskCacheDir(loadConfig.diskCacheDir));
+		}
+		if (this.engine == null) {
+			this.engine = new ImageLoaderEngine(this.memoryCache, this.diskCache);
+		}
+		if (this.mHttpWorker == null) {
+			this.mHttpWorker = HttpWorkerFactory.createHttpWorker();
+		}
+		inited = true;
+	}
+
+	/**
+	 * Image disk cache saved at: /sdcard/texas/.Cache Memory cache size is:
+	 * heapsize/8
+	 */
+	public void initDefault() {
+		init(getDefaultConfig());
+	}
+
+	private static String getDefaultDiskCacheDir() {
+		String sdCard = Environment.getExternalStorageDirectory().getAbsolutePath();
+		String cachePath = sdCard + File.separator + DEFAULT_DISK_CACHE_DIR;
+		return cachePath;
+	}
+
+	private ImageLoaderConfig getDefaultConfig() {
+		ImageLoaderConfig config = new ImageLoaderConfig();
+		config.diskCacheDir = getDefaultDiskCacheDir();
+		config.memoryCacheSize = DEFAULT_MEMORY_CACHE_SIZE;
+		config.decodeOptions = getDefaultOptions();
+		return config;
+	}
+
+	private static File createDiskCacheDir(String path) {
+		if (TextUtils.isEmpty(path)) {
+			return null;
+		}
+		File file = new File(path);
+		if (file.exists() && file.isDirectory()) {
+			return file;
+		} else {
+			if (file.mkdirs()) {
+				return file;
+			} else {
+				return null;
+			}
+		}
+	}
+
 	public void load(final String imageUrl, ImageView view) {
-		load(imageUrl, view, 0, 0);
+		load(imageUrl, new ImageViewWrapper(view), ImageLoader.getImageLoadListener(imageUrl, view, 0, 0));
 	}
 
 	public void load(final String imageUrl, ImageView view, int defaultImage) {
-		load(imageUrl, view, defaultImage, 0);
+		load(imageUrl, new ImageViewWrapper(view), ImageLoader.getImageLoadListener(imageUrl, view, defaultImage, 0));
 	}
 
 	public void load(final String imageUrl, ImageView view, int defaultImage, int errorImage) {
@@ -81,14 +129,17 @@ public class ImageLoader {
 	public void load(final String imageUrl, ImageView view, final ImageLoadListener listener) {
 		load(imageUrl, new ImageViewWrapper(view), listener);
 	}
-	
+
 	private void load(final String url, final ImageViewWrapper imageWrapper, final ImageLoadListener listener) {
+		if (!inited) {
+			throw new IllegalStateException("ImageLoader must be init with ImageLoaderConfig before use");
+		}
 		throwIfNotInMainThread();
 		if (TextUtils.isEmpty(url)) {
 			engine.cancelDisplayTaskFor(imageWrapper);
 			return;
 		}
-		
+
 		final String cacheKey = MD5Util.generateMD5(url);
 		Bitmap cachedBitmap = engine.getFromMemoryCache(cacheKey);
 		if (cachedBitmap != null && !cachedBitmap.isRecycled()) {
@@ -115,23 +166,14 @@ public class ImageLoader {
 		}
 	}
 
-	public static ImageLoadListener getImageLoadListener(final String url, final ImageView view) {
-		return getImageLoadListener(url, view, 0, 0);
-	}
-
-	public static ImageLoadListener getImageLoadListener(final String url, final ImageView view,
-			final int defaultImageResId) {
-		return getImageLoadListener(url, view, defaultImageResId, 0);
-	}
-
 	/**
 	 * 返回默认的ImageLoadListener
 	 * 
 	 * @param view
 	 * @param defaultImageResId
-	 *            默认图片
+	 *            默认图片, 0为不设置
 	 * @param errorImageResId
-	 *            下载失败后的图片
+	 *            下载失败后的图片， 0为不设置
 	 * @return
 	 */
 	public static ImageLoadListener getImageLoadListener(final String url, final ImageView view,
@@ -167,14 +209,20 @@ public class ImageLoader {
 		options.inInputShareable = true;
 		return options;
 	}
-	
+
 	public void clearMemoryCache() {
 		if (memoryCache != null)
 			memoryCache.clear();
 	}
-	
+
 	public void clearDiskCache() {
 		if (diskCache != null)
 			diskCache.clear();
+	}
+
+	static class ImageLoaderConfig {
+		public String diskCacheDir;
+		public int memoryCacheSize = -1;
+		public Options decodeOptions;
 	}
 }

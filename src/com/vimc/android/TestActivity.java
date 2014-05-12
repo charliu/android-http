@@ -28,8 +28,6 @@ import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
 import android.util.Log;
-import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -61,6 +59,7 @@ public class TestActivity extends Activity {
 		progressBar.setMax(100);
 		progressBar.setVisibility(View.INVISIBLE);
 		downloadFileButton = (Button) findViewById(R.id.file_download);
+		ImageLoader.getInstance().initDefault();
 	}
 
 	public void onClickButton(View v) {

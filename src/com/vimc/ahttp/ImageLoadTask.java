@@ -54,7 +54,6 @@ public class ImageLoadTask implements Runnable {
 		} catch (Exception e) {
 			if (LogConfig.LOG_E)
 				e.printStackTrace();
-			bitmap = null;
 		} finally {
 			loadLock.unlock();
 		}

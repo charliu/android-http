@@ -16,12 +16,16 @@ public class ExecutorFactory {
 	private static final int DEFAULT_THREAD_PRIORITY = Thread.NORM_PRIORITY - 1;
 
 	public static Executor createDefaultExecutor() {
-		return createExecutor(DEFAULT_POOL_SIZE, MAXIMUM_POOL_SIZE, DEFAULT_THREAD_PRIORITY,
-				new LinkedBlockingQueue<Runnable>());
+		return createExecutor(DEFAULT_POOL_SIZE, MAXIMUM_POOL_SIZE, DEFAULT_THREAD_PRIORITY);
+	}
+	
+	public static Executor createExecutor(int corePoolSize, int maxPoolSize, int threadPriority, BlockingQueue<Runnable> taskQueue) {
+		return new ThreadPoolExecutor(corePoolSize, maxPoolSize, KEEP_ALIVE, TimeUnit.SECONDS, taskQueue,
+				createThreadFactory(threadPriority));
 	}
 
-	public static Executor createExecutor(int corePoolSize, int maxPoolSize, int threadPriority,
-			BlockingQueue<Runnable> taskQueue) {
+	public static Executor createExecutor(int corePoolSize, int maxPoolSize, int threadPriority) {
+		BlockingQueue<Runnable> taskQueue = new LinkedBlockingQueue<Runnable>();
 		return new ThreadPoolExecutor(corePoolSize, maxPoolSize, KEEP_ALIVE, TimeUnit.SECONDS, taskQueue,
 				createThreadFactory(threadPriority));
 	}

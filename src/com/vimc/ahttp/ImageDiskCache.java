@@ -25,6 +25,9 @@ public class ImageDiskCache extends Cache<Bitmap> {
 	 * @param cacheDir 缓存目录
 	 */
 	public ImageDiskCache(File cacheDir) {
+		if (cacheDir == null) {
+			throw new IllegalArgumentException("Cache dir can't be null");
+		}
 		this.cacheDir = cacheDir;
 	}
 
@@ -36,6 +39,13 @@ public class ImageDiskCache extends Cache<Bitmap> {
 		File file = new File(cacheDir, cacheKey);
 		if (file.exists()) {
 			file.delete();
+		}
+		File parentFile = file.getParentFile();
+		if (!parentFile.exists()) {
+			if (!parentFile.mkdirs()) {
+				HLog.e("Image disk cache dir not available");
+				return;
+			}
 		}
 		FileOutputStream fos = null;
 		try {
