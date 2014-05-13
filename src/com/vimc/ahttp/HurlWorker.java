@@ -21,6 +21,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.ProtocolVersion;
 import org.apache.http.StatusLine;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicHttpResponse;
@@ -32,13 +33,22 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.Socket;
 import java.net.URL;
+import java.net.UnknownHostException;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
 import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 /**
  * An {@link HttpStack} based on {@link HttpURLConnection}.
@@ -100,7 +110,7 @@ public class HurlWorker implements HttpWorker {
 		addHeadersIfExists(request, connection);
 		setConnectionParametersForRequest(connection, request);
 		// Initialize HttpResponse with data from the HttpURLConnection.
-		ProtocolVersion protocolVersion = new ProtocolVersion("HTTP", 1, 1);
+		ProtocolVersion protocolVersion = new ProtocolVersion("HTTPS", 1, 1);
 		int responseCode = connection.getResponseCode();
 		if (responseCode == -1) {
 			// -1 is returned by getResponseCode() if the response code could
@@ -121,7 +131,7 @@ public class HurlWorker implements HttpWorker {
 		}
 		return response;
 	}
-	
+
 	private void addHeadersIfExists(Request<?> request, HttpURLConnection conn) {
 		if (request.getHeaders() != null && request.getHeaders().size() > 0) {
 			HashMap<String, String> map = new HashMap<String, String>();
@@ -178,11 +188,61 @@ public class HurlWorker implements HttpWorker {
 		connection.setDoInput(true);
 
 		// use caller-provided custom SslSocketFactory, if any, for HTTPS
-		if ("https".equals(url.getProtocol()) && mSslSocketFactory != null) {
-			((HttpsURLConnection) connection).setSSLSocketFactory(mSslSocketFactory);
+		if ("https".equals(url.getProtocol())) {
+			try {
+				KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+				trustStore.load(null, null);
+				SSLSocketFactoryImpl f = new SSLSocketFactoryImpl(trustStore);
+			} catch (Exception e) {
+
+			}
 		}
 
 		return connection;
+	}
+
+	private class SSLSocketFactoryImpl extends SSLSocketFactory {
+
+		SSLContext sslContext = SSLContext.getInstance("TLS");
+
+		public SSLSocketFactoryImpl(KeyStore truststore) throws NoSuchAlgorithmException, KeyManagementException,
+				KeyStoreException, UnrecoverableKeyException {
+			super(truststore);
+
+			TrustManager tm = new X509TrustManager() {
+
+				@Override
+				public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+					return null;
+				}
+
+				@Override
+				public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType)
+						throws java.security.cert.CertificateException {
+
+				}
+
+				@Override
+				public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType)
+						throws java.security.cert.CertificateException {
+
+				}
+			};
+
+			sslContext.init(null, new TrustManager[] { tm }, null);
+			HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
+		}
+
+		@Override
+		public Socket createSocket(Socket socket, String host, int port, boolean autoClose) throws IOException,
+				UnknownHostException {
+			return sslContext.getSocketFactory().createSocket(socket, host, port, autoClose);
+		}
+
+		@Override
+		public Socket createSocket() throws IOException {
+			return sslContext.getSocketFactory().createSocket();
+		}
 	}
 
 	static void setConnectionParametersForRequest(HttpURLConnection connection, Request<?> request) throws IOException {

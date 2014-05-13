@@ -15,6 +15,13 @@
             android:orientation="vertical" >
 
             <Button
+                android:id="@+id/httpsRequest"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:onClick="onClickButton"
+                android:text="Https Request" />
+
+            <Button
                 android:id="@+id/stringRequestGet"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
@@ -27,6 +34,7 @@
                 android:layout_height="wrap_content"
                 android:onClick="onClickButton"
                 android:text="String Request POST" />
+
             <Button
                 android:id="@+id/jsonRequest"
                 android:layout_width="fill_parent"
@@ -54,6 +62,7 @@
                 android:layout_height="wrap_content"
                 android:onClick="onClickButton"
                 android:text="LoadListImages" />
+
             <Button
                 android:id="@+id/img_grid_view"
                 android:layout_width="fill_parent"

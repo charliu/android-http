@@ -25,9 +25,6 @@ public class ImageDiskCache extends Cache<Bitmap> {
 	 * @param cacheDir 缓存目录
 	 */
 	public ImageDiskCache(File cacheDir) {
-		if (cacheDir == null) {
-			throw new IllegalArgumentException("Cache dir can't be null");
-		}
 		this.cacheDir = cacheDir;
 	}
 

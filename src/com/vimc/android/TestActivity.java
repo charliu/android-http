@@ -64,6 +64,9 @@ public class TestActivity extends Activity {
 
 	public void onClickButton(View v) {
 		switch (v.getId()) {
+		case R.id.httpsRequest:
+			httpsRequest();
+			break;
 		case R.id.stringRequestGet:
 			model.getSiChuanWeather(new BaseCallback<String>() {
 				@Override
@@ -100,6 +103,23 @@ public class TestActivity extends Activity {
 			downloadFile();
 			break;
 		}
+	}
+
+	private void httpsRequest() {
+		String httpsUrl = "https://certs.cac.washington.edu/CAtest/";
+		StringRequest request = new StringRequest(httpsUrl, null, null, new ResponseListener<String>() {
+
+			@Override
+			public void onSuccess(String response) {
+				System.out.println(response);
+			}
+
+			@Override
+			public void onError(Error error) {
+				System.out.println("code:" + error.errorCode);
+			}
+		});
+		HttpExecutor.execute(request);
 	}
 
 	private void jsonRequest() {
