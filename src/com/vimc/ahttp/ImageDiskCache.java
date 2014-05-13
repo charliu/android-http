@@ -38,7 +38,8 @@ public class ImageDiskCache extends Cache<Bitmap> {
 		}
 		File file = new File(cacheDir, cacheKey);
 		if (file.exists()) {
-			file.delete();
+			HLog.w("Image file is alerday in sdcard, FileName:" + file.getName());
+			return;
 		}
 		File parentFile = file.getParentFile();
 		if (!parentFile.exists()) {
@@ -73,9 +74,10 @@ public class ImageDiskCache extends Cache<Bitmap> {
 			try {
 				in = new FileInputStream(file);
 				bitmap = BitmapFactory.decodeStream(in, null, options);
-			} catch (FileNotFoundException e1) {
-				e1.printStackTrace();
-			} catch (OutOfMemoryError e) {
+			} catch (FileNotFoundException notFoundError) {
+				if (HLog.Config.LOG_E) notFoundError.printStackTrace();
+			} catch (OutOfMemoryError outMemeoryError) {
+				if (HLog.Config.LOG_E) outMemeoryError.printStackTrace();
 			} finally {
 				if (in != null) {
 					try {

@@ -331,7 +331,7 @@ public class FileDownloadTask {
 
 		} catch (IOException e) {
 			fileTotalSize = -1;
-			if (LogConfig.LOG_E) {
+			if (HLog.Config.LOG_E) {
 				e.printStackTrace();
 			}
 		} finally {

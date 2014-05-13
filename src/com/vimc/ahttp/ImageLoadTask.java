@@ -52,7 +52,7 @@ public class ImageLoadTask implements Runnable {
 			if (taskNotActual("AfterLoad"))
 				return;
 		} catch (Exception e) {
-			if (LogConfig.LOG_E)
+			if (HLog.Config.LOG_E)
 				e.printStackTrace();
 		} finally {
 			loadLock.unlock();
@@ -90,7 +90,7 @@ public class ImageLoadTask implements Runnable {
 		Bitmap bitmap = engine.getFromDiskCache(loadingInfo.cacheKey);
 		if (bitmap != null) {
 			engine.putToMemoryCache(loadingInfo.cacheKey, bitmap);
-			HLog.i("Load image from disk cache in SubThread, URL:" + loadingInfo.uri);
+			HLog.i("Load image from disk cache, URL:" + loadingInfo.uri);
 			return bitmap;
 		}
 		HLog.i("Starting download, URL:" + loadingInfo.uri);
@@ -105,7 +105,11 @@ public class ImageLoadTask implements Runnable {
 				if (in == null) {
 					throw new IOException("Bitmap inputstream is null");
 				}
-				bitmap = BitmapFactory.decodeStream(in, null, defaultDecodeOptions);
+				try {
+					bitmap = BitmapFactory.decodeStream(in, null, defaultDecodeOptions);
+				} catch(OutOfMemoryError error) {
+					if (HLog.Config.LOG_E) error.printStackTrace();
+				}
 			} finally {
 				try {
 					entity.consumeContent();
@@ -116,7 +120,6 @@ public class ImageLoadTask implements Runnable {
 			if (bitmap == null) {
 				HLog.e("Image can't be decode, URL:" + loadingInfo.uri);
 			} else {
-				HLog.i("Download Success, URL:" + loadingInfo.uri);
 				engine.putToMemoryCache(loadingInfo.cacheKey, bitmap);
 				engine.putToDiskCache(loadingInfo.cacheKey, bitmap);
 				return bitmap;
