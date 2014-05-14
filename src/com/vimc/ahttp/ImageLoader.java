@@ -25,7 +25,9 @@ public class ImageLoader {
 	private volatile static ImageLoader instance;
 
 	private static String DEFAULT_DISK_CACHE_DIR = "texas" + File.separator + ".Cache";
-	private static final int DEFAULT_MEMORY_CACHE_SIZE = (int) (Runtime.getRuntime().maxMemory() / (1024 * 8));
+	
+	//默认图片内存缓存size为heapsize的1/8
+	private static final int DEFAULT_MEMORY_CACHE_SIZE = (int) (Runtime.getRuntime().maxMemory() / (1024 * 8)); 
 
 	private Cache<Bitmap> memoryCache;
 	private Cache<Bitmap> diskCache;
@@ -114,23 +116,27 @@ public class ImageLoader {
 	}
 
 	public void load(final String imageUrl, ImageView view) {
-		load(imageUrl, new ImageViewWrapper(view), ImageLoader.getImageLoadListener(imageUrl, view, 0, 0));
+		load(imageUrl, new ImageViewWrapper(view), ImageLoader.getImageLoadListener(imageUrl, view, 0, 0), null);
+	}
+	
+	public void load(final String imageUrl, ImageView view, Options decodeOptions) {
+		load(imageUrl, new ImageViewWrapper(view), ImageLoader.getImageLoadListener(imageUrl, view, 0, 0), decodeOptions);
 	}
 
 	public void load(final String imageUrl, ImageView view, int defaultImage) {
-		load(imageUrl, new ImageViewWrapper(view), ImageLoader.getImageLoadListener(imageUrl, view, defaultImage, 0));
+		load(imageUrl, new ImageViewWrapper(view), ImageLoader.getImageLoadListener(imageUrl, view, defaultImage, 0), null);
 	}
 
 	public void load(final String imageUrl, ImageView view, int defaultImage, int errorImage) {
 		load(imageUrl, new ImageViewWrapper(view),
-				ImageLoader.getImageLoadListener(imageUrl, view, defaultImage, errorImage));
+				ImageLoader.getImageLoadListener(imageUrl, view, defaultImage, errorImage), null);
 	}
-
+	
 	public void load(final String imageUrl, ImageView view, final ImageLoadListener listener) {
-		load(imageUrl, new ImageViewWrapper(view), listener);
+		load(imageUrl, new ImageViewWrapper(view), listener, null);
 	}
 
-	private void load(final String url, final ImageViewWrapper imageWrapper, final ImageLoadListener listener) {
+	private void load(final String url, final ImageViewWrapper imageWrapper, final ImageLoadListener listener, Options options) {
 		if (!inited) {
 			throw new IllegalStateException("ImageLoader must be init with ImageLoaderConfig before use");
 		}
@@ -150,9 +156,16 @@ public class ImageLoader {
 		}
 		listener.onSuccess(url, imageWrapper.imageViewRef.get(), null);
 		engine.prepareDisplayTaskFor(imageWrapper, cacheKey);
-
+		
+		if (options == null) {
+			if (loadConfig.decodeOptions != null) {
+				options = loadConfig.decodeOptions;
+			} else {
+				options = getDefaultOptions();
+			}
+		}
 		ImageLoadingInfo loadingInfo = new ImageLoadingInfo(url, imageWrapper, listener, cacheKey,
-				engine.getLockForUri(url));
+				engine.getLockForUri(url), options);
 		ImageLoadTask loadingTask = new ImageLoadTask(loadingInfo, engine, mHttpWorker);
 		engine.submit(loadingTask);
 	}
@@ -198,9 +211,7 @@ public class ImageLoader {
 	}
 
 	/**
-	 * 默认decode options
-	 * 
-	 * @return
+	 * 默认decode options,使用RGB_565
 	 */
 	public static Options getDefaultOptions() {
 		Options options = new Options();

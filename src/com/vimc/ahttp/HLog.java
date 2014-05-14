@@ -46,5 +46,11 @@ public class HLog {
 			Log.i(Config.HTTP_TAG, msg);
 		}
 	}
+	
+	public static void printThrowable(Throwable t) {
+		if (Config.LOG_E) {
+			t.printStackTrace();
+		}
+	}
 
 }

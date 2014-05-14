@@ -73,7 +73,6 @@ public class TestActivity extends Activity {
 				public void onResult(String response) {
 					Toast.makeText(TestActivity.this, "String Get Rquest\n" + response, Toast.LENGTH_SHORT).show();
 				}
-
 				@Override
 				public void onError(Error error) {
 
@@ -111,15 +110,15 @@ public class TestActivity extends Activity {
 
 			@Override
 			public void onSuccess(String response) {
-				System.out.println(response);
+				Toast.makeText(TestActivity.this, response.toString(), 1).show();
 			}
 
 			@Override
 			public void onError(Error error) {
-				System.out.println("code:" + error.errorCode);
+				Toast.makeText(TestActivity.this, "请求错误, errorCode:" + error.errorCode + " msg:" + error.getMessage(), 1).show();
 			}
 		});
-		HttpExecutor.execute(request);
+		HttpExecutor.execute(request, TestActivity.this, true);
 	}
 
 	private void jsonRequest() {
@@ -234,7 +233,7 @@ public class TestActivity extends Activity {
 
 	private void bitmapRequest() {
 		String jay = "http://pic4.nipic.com/20091008/2128360_084655191316_2.jpg";
-		loader.load(jay, image, R.drawable.ps_96, R.drawable.error96);
+		loader.load(jay, image, R.drawable.android, R.drawable.error96);
 	}
 
 	@Override
@@ -246,6 +245,14 @@ public class TestActivity extends Activity {
 		case 2:
 			ImageLoader.getInstance().clearDiskCache();
 			break;
+		case 3:
+			File files = new File(FileDownloader.DEFAULT_FILE_SAVE_PATH);
+			if (files.exists() && files.isDirectory()) {
+				for (File f : files.listFiles()) {
+					f.delete();
+				}
+			}
+			break;
 		}
 		return super.onMenuItemSelected(featureId, item);
 	}
@@ -254,10 +261,8 @@ public class TestActivity extends Activity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		menu.add(Menu.NONE, 1, 1, "Clear Memory Cache");
 		menu.add(Menu.NONE, 2, 1, "Clear Disk Cache");
+		menu.add(Menu.NONE, 3, 1, "Clear Download File");
 		return super.onCreateOptionsMenu(menu);
 	}
-
-	
-	
 	
 }

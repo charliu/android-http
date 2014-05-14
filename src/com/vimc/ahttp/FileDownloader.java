@@ -13,7 +13,7 @@ import android.os.Environment;
  * 
  */
 public class FileDownloader {
-	private static final String DEFAULT_FILE_SAVE_PATH = Environment.getExternalStorageDirectory().getAbsolutePath()
+	public static final String DEFAULT_FILE_SAVE_PATH = Environment.getExternalStorageDirectory().getAbsolutePath()
 			+ File.separator + "tmp";
 
 	public static FileDownloadTask download(final String fileUrl) {

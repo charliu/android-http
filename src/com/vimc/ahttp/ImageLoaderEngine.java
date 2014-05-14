@@ -4,8 +4,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.ReentrantLock;
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
@@ -26,6 +28,8 @@ public class ImageLoaderEngine {
 
 	private Handler mHandler = new Handler(Looper.getMainLooper());
 
+	private BlockingQueue<Runnable> imageLoadTaskQueue = new LinkedBlockingQueue<Runnable>();
+	
 	@SuppressLint("UseSparseArrays")
 	private final Map<Integer, String> cacheKeysForImageViewWrapper = Collections
 			.synchronizedMap(new HashMap<Integer, String>());
@@ -41,7 +45,7 @@ public class ImageLoaderEngine {
 		
 		taskDistributor = Executors.newCachedThreadPool();
 		networkExecutor = ExecutorFactory.createExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE,
-				Thread.NORM_PRIORITY - 1);
+				Thread.NORM_PRIORITY - 1, imageLoadTaskQueue);
 	}
 
 	public void submit(final Runnable task) {

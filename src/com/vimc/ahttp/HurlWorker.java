@@ -21,7 +21,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.ProtocolVersion;
 import org.apache.http.StatusLine;
-import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.conn.ssl.X509HostnameVerifier;
 import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicHttpResponse;
@@ -33,21 +33,19 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.Socket;
 import java.net.URL;
-import java.net.UnknownHostException;
-import java.security.KeyManagementException;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
 /**
@@ -187,61 +185,66 @@ public class HurlWorker implements HttpWorker {
 		connection.setUseCaches(false);
 		connection.setDoInput(true);
 
-		// use caller-provided custom SslSocketFactory, if any, for HTTPS
 		if ("https".equals(url.getProtocol())) {
-			try {
-				KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
-				trustStore.load(null, null);
-				SSLSocketFactoryImpl f = new SSLSocketFactoryImpl(trustStore);
-			} catch (Exception e) {
-
+			if (mSslSocketFactory != null) {
+				((HttpsURLConnection) connection).setSSLSocketFactory(mSslSocketFactory);
+			} else {
+				setDefaultSSLSocketFactory();
 			}
 		}
 
 		return connection;
 	}
 
-	private class SSLSocketFactoryImpl extends SSLSocketFactory {
+	private void setDefaultSSLSocketFactory() {
+		SSLContext sslContext = null;
+		try {
+			X509TrustManagerImpl mtm = new X509TrustManagerImpl();
+			TrustManager[] tms = new TrustManager[] { mtm };
 
-		SSLContext sslContext = SSLContext.getInstance("TLS");
+			// 初始化X509TrustManager中的SSLContext
+			sslContext = SSLContext.getInstance("TLS");
+			sslContext.init(null, tms, new java.security.SecureRandom());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
-		public SSLSocketFactoryImpl(KeyStore truststore) throws NoSuchAlgorithmException, KeyManagementException,
-				KeyStoreException, UnrecoverableKeyException {
-			super(truststore);
-
-			TrustManager tm = new X509TrustManager() {
-
-				@Override
-				public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-					return null;
-				}
-
-				@Override
-				public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType)
-						throws java.security.cert.CertificateException {
-
-				}
-
-				@Override
-				public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType)
-						throws java.security.cert.CertificateException {
-
-				}
-			};
-
-			sslContext.init(null, new TrustManager[] { tm }, null);
+		// 为javax.net.ssl.HttpsURLConnection设置默认的SocketFactory和HostnameVerifier
+		if (sslContext != null) {
 			HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
 		}
+		X509HostnameVerifier hostnameVerifier = org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
+		HttpsURLConnection.setDefaultHostnameVerifier(hostnameVerifier);
+	}
 
-		@Override
-		public Socket createSocket(Socket socket, String host, int port, boolean autoClose) throws IOException,
-				UnknownHostException {
-			return sslContext.getSocketFactory().createSocket(socket, host, port, autoClose);
+	private class X509TrustManagerImpl implements X509TrustManager {
+		@SuppressWarnings("unused")
+		X509TrustManager myJSSEX509TrustManager;
+
+		public X509TrustManagerImpl() throws Exception {
+			KeyStore ks = KeyStore.getInstance("BKS");
+			TrustManagerFactory tmf = TrustManagerFactory.getInstance("X509");
+			tmf.init(ks);
+			TrustManager tms[] = tmf.getTrustManagers();
+			for (int i = 0; i < tms.length; i++) {
+				if (tms[i] instanceof X509TrustManager) {
+					myJSSEX509TrustManager = (X509TrustManager) tms[i];
+					return;
+				}
+			}
 		}
 
 		@Override
-		public Socket createSocket() throws IOException {
-			return sslContext.getSocketFactory().createSocket();
+		public void checkClientTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
+		}
+
+		@Override
+		public void checkServerTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
+		}
+
+		@Override
+		public X509Certificate[] getAcceptedIssuers() {
+			return null;
 		}
 	}
 

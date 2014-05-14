@@ -1,14 +1,12 @@
 package com.vimc.android;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.vimc.ahttp.R;
 
 public class ImgUrls {
 
 	public static final String[] IMAGES = new String[] {
 			// Heavy images
+			"https://www.eff.org/sites/default/files/chrome150_0.jpg",
 			"http://image.donga.com/mlbpark/fileUpload/201401/52dde15113c53b01da3b.jpg",
 			"https://lh6.googleusercontent.com/-55osAWw3x0Q/URquUtcFr5I/AAAAAAAAAbs/rWlj1RUKrYI/s1024/A%252520Photographer.jpg",
 			"https://lh4.googleusercontent.com/--dq8niRp7W4/URquVgmXvgI/AAAAAAAAAbs/-gnuLQfNnBA/s1024/A%252520Song%252520of%252520Ice%252520and%252520Fire.jpg",
@@ -150,7 +148,7 @@ public class ImgUrls {
 																			// encoded
 																			// symbols
 			"assets://Living Things @#&=+-_.,!()~'%20.jpg", // Image from assets
-			"drawable://" + R.drawable.ps_96, // Image from drawables
+			"drawable://" + R.drawable.android, // Image from drawables
 			"http://upload.wikimedia.org/wikipedia/ru/b/b6/Как_кот_с_мышами_воевал.png", // Link
 																							// with
 																							// UTF-8

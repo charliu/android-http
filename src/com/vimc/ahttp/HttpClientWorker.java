@@ -8,7 +8,6 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
 import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -40,14 +39,18 @@ import org.apache.http.params.HttpProtocolParams;
  * Use HttpClient execute an request, return HttpReqponse
  * 
  * @author CharLiu
- *
+ * 
  */
 public class HttpClientWorker implements HttpWorker {
 	private static final int SOCKET_OPERATION_TIMEOUT = 60 * 1000;
 	protected final HttpClient mClient;
 
-	public HttpClientWorker() {
-		this.mClient = newHttpClient();
+	public HttpClientWorker(HttpClient httpClient) {
+		if (httpClient != null) {
+			this.mClient = httpClient;
+		} else {
+			this.mClient = newHttpClient();
+		}
 	}
 
 	@Override
@@ -108,25 +111,15 @@ public class HttpClientWorker implements HttpWorker {
 			SSLSocketFactoryImpl sslSocketFactory = new SSLSocketFactoryImpl(trustStore);
 			sslSocketFactory.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
 			schemeRegistry.register(new Scheme("https", sslSocketFactory, 443));
-		} catch (KeyManagementException e) {
-			e.printStackTrace();
-		} catch (UnrecoverableKeyException e) {
-			e.printStackTrace();
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-		} catch (KeyStoreException e) {
-			e.printStackTrace();
-		} catch (CertificateException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			HLog.printThrowable(e);
 		}
 
 		ClientConnectionManager manager = new ThreadSafeClientConnManager(params, schemeRegistry);
 		return new DefaultHttpClient(manager, params);
 	}
 
-	static class SSLSocketFactoryImpl extends SSLSocketFactory {
+	private class SSLSocketFactoryImpl extends SSLSocketFactory {
 
 		SSLContext sslContext = SSLContext.getInstance("TLS");
 
