@@ -75,10 +75,9 @@ public class FileDownloadTask {
 
 		void onError(DownloadError error);
 	}
-	
+
 	public enum FileFrom {
-		INTERNET,
-		SDCARD
+		INTERNET, SDCARD
 	}
 
 	/**
@@ -103,7 +102,7 @@ public class FileDownloadTask {
 
 		downloadThread.start();
 	}
-	
+
 	/**
 	 * 停止下载，停止后可以调用startDownload继续下载
 	 */
@@ -115,9 +114,13 @@ public class FileDownloadTask {
 	public boolean isStoped() {
 		return stop;
 	}
-	
+
 	public boolean isCompleted() {
 		return isCompleted;
+	}
+
+	public void setCompleted(boolean status) {
+		isCompleted = status;
 	}
 
 	private String getFileName(String fileUrl) {
@@ -205,6 +208,7 @@ public class FileDownloadTask {
 			stop = true;
 			postError(e);
 			e.printStackTrace();
+			return;
 		} finally {
 			stop = true;
 			releaseResouce(entity, raf);
@@ -214,16 +218,23 @@ public class FileDownloadTask {
 				downloadTempFile.delete();
 			}
 		}
-		if (downloadTempFile.exists()) {
+		if (downloadTempFile.exists() && !badTempFile) {
 			if ((readSize + downloadedTempFileSize) == fileTotalSize) {
 				final File renameFile = createRenameFile(getSaveFileAbsolutePath(fileName));
 				if (downloadTempFile.renameTo(renameFile)) {
 					isCompleted = true;
+					HLog.d("post download success");
 					postDonwloadSuccess(renameFile, FileFrom.INTERNET);
+					return;
 				} else {
 					HLog.e("Rename file failed, name:" + renameFile.getAbsolutePath());
 				}
+			} else {
+				HLog.d("size not equal");
+				postError(new IOException("FileSize not equal"));
 			}
+		} else {
+			postError(new IOException("File not exist"));
 		}
 
 	}

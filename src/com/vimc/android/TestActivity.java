@@ -252,6 +252,10 @@ public class TestActivity extends Activity {
 					f.delete();
 				}
 			}
+			downloadFileButton.setText("DownloadFile");
+			downloadFileButton.setClickable(true);
+			if (downloadTask != null)
+				downloadTask.setCompleted(false);
 			break;
 		}
 		return super.onMenuItemSelected(featureId, item);
