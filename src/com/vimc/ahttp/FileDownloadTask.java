@@ -164,6 +164,7 @@ public class FileDownloadTask {
 		HttpEntity entity = null;
 		RandomAccessFile raf = null;
 		boolean badTempFile = false;
+		boolean onError = false; 
 		try {
 			HttpResponse response = httpWorker.doHttpRquest(request);
 			int statusCode = response.getStatusLine().getStatusCode();
@@ -206,16 +207,17 @@ public class FileDownloadTask {
 
 		} catch (IOException e) {
 			stop = true;
+			onError = true;
 			postError(e);
 			e.printStackTrace();
 			return;
 		} finally {
 			stop = true;
 			releaseResouce(entity, raf);
-		}
-		if (badTempFile) {
-			if (downloadTempFile.exists()) {
-				downloadTempFile.delete();
+			if (badTempFile) {
+				if (downloadTempFile.exists()) {
+					downloadTempFile.delete();
+				}
 			}
 		}
 		if (downloadTempFile.exists() && !badTempFile) {
@@ -231,10 +233,7 @@ public class FileDownloadTask {
 				}
 			} else {
 				HLog.d("size not equal");
-				postError(new IOException("FileSize not equal"));
 			}
-		} else {
-			postError(new IOException("File not exist"));
 		}
 
 	}

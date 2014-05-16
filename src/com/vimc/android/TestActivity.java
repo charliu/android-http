@@ -140,7 +140,9 @@ public class TestActivity extends Activity {
 
 	private void downloadFile() {
 		if (downloadTask == null) {
-			createDownloadTask("http://gdown.baidu.com/data/wisegame/0a02d66ad2e3e7a8/aimei_2014031801.apk");
+			String url  = "http://gdown.baidu.com/data/wisegame/0a02d66ad2e3e7a8/aimei_2014031801.apk";
+			
+			createDownloadTask("http://gdown.baidu.com/data/wisegame/e9f794ca59d48e93/manhuadao_34.apk");
 			downloadFileButton.setText("Pause Download");
 		} else {
 			if (!downloadTask.isCompleted()) {
