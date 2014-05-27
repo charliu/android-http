@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.json.JSONObject;
 
+import com.vimc.ahttp.Pojo;
 import com.vimc.ahttp.R;
 import com.vimc.ahttp.DownloadError;
 import com.vimc.ahttp.Error;
@@ -26,7 +27,9 @@ import com.vimc.android.mvc.BusinessModel;
 
 import android.os.Bundle;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -61,6 +64,18 @@ public class TestActivity extends Activity {
 		downloadFileButton = (Button) findViewById(R.id.file_download);
 		ImageLoader.getInstance().initDefault();
 	}
+	
+	
+
+	@Override
+	protected void onResume() {
+		TelephonyManager manager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+		manager.getSimState();
+		Log.i("SIM", "sim:" + manager.getSimState());
+		Toast.makeText(this, "SIM:" + manager.getSimState() , 1).show();
+	}
+
+
 
 	public void onClickButton(View v) {
 		switch (v.getId()) {
@@ -73,6 +88,7 @@ public class TestActivity extends Activity {
 				public void onResult(String response) {
 					Toast.makeText(TestActivity.this, "String Get Rquest\n" + response, Toast.LENGTH_SHORT).show();
 				}
+
 				@Override
 				public void onError(Error error) {
 
@@ -115,7 +131,8 @@ public class TestActivity extends Activity {
 
 			@Override
 			public void onError(Error error) {
-				Toast.makeText(TestActivity.this, "请求错误, errorCode:" + error.errorCode + " msg:" + error.getMessage(), 1).show();
+				Toast.makeText(TestActivity.this, "请求错误, errorCode:" + error.errorCode + " msg:" + error.getMessage(),
+						1).show();
 			}
 		});
 		HttpExecutor.execute(request, TestActivity.this, true);
@@ -140,8 +157,8 @@ public class TestActivity extends Activity {
 
 	private void downloadFile() {
 		if (downloadTask == null) {
-			String url  = "http://gdown.baidu.com/data/wisegame/0a02d66ad2e3e7a8/aimei_2014031801.apk";
-			
+			String url = "http://gdown.baidu.com/data/wisegame/0a02d66ad2e3e7a8/aimei_2014031801.apk";
+
 			createDownloadTask("http://gdown.baidu.com/data/wisegame/e9f794ca59d48e93/manhuadao_34.apk");
 			downloadFileButton.setText("Pause Download");
 		} else {
@@ -190,6 +207,13 @@ public class TestActivity extends Activity {
 			@Override
 			public void onError(DownloadError error) {
 				Toast.makeText(TestActivity.this, "Download failed at:" + error.getDownloadedSize() + "byte", 1).show();
+			}
+
+			@Override
+			public void onPause(String tempFilePath, long downloadedSize, long fileTotalSize) {
+				Toast.makeText(TestActivity.this,
+						"暂停下载\n临时文件：" + tempFilePath + "\n已下载:" + downloadedSize + "\n总大小：" + fileTotalSize, 1).show();
+
 			}
 		});
 	}
@@ -240,7 +264,7 @@ public class TestActivity extends Activity {
 
 	@Override
 	public boolean onMenuItemSelected(int featureId, MenuItem item) {
-		switch(item.getItemId()) {
+		switch (item.getItemId()) {
 		case 1:
 			ImageLoader.getInstance().clearMemoryCache();
 			break;
@@ -270,5 +294,5 @@ public class TestActivity extends Activity {
 		menu.add(Menu.NONE, 3, 1, "Clear Download File");
 		return super.onCreateOptionsMenu(menu);
 	}
-	
+
 }

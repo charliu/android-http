@@ -232,8 +232,8 @@ public class ImageLoader {
 	}
 
 	static class ImageLoaderConfig {
-		public String diskCacheDir;
-		public int memoryCacheSize = -1;
-		public Options decodeOptions;
+		public String diskCacheDir; //图片磁盘缓存根路径
+		public int memoryCacheSize = -1; //图片内存缓存大小,单位(byte)
+		public Options decodeOptions; //默认的图片decode参数
 	}
 }

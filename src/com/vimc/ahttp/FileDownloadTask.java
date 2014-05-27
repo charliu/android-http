@@ -70,6 +70,8 @@ public class FileDownloadTask {
 		void onStart(String fileUrl);
 
 		void onUpdateProgress(long currentSize, long totalSize, int percent);
+		
+		void onPause(String tempFilePath, long downloadedSize, long fileTotalSize);
 
 		void onComplete(File downloadedFile, FileFrom from);
 
@@ -164,7 +166,6 @@ public class FileDownloadTask {
 		HttpEntity entity = null;
 		RandomAccessFile raf = null;
 		boolean badTempFile = false;
-		boolean onError = false; 
 		try {
 			HttpResponse response = httpWorker.doHttpRquest(request);
 			int statusCode = response.getStatusLine().getStatusCode();
@@ -207,7 +208,6 @@ public class FileDownloadTask {
 
 		} catch (IOException e) {
 			stop = true;
-			onError = true;
 			postError(e);
 			e.printStackTrace();
 			return;
@@ -221,22 +221,36 @@ public class FileDownloadTask {
 			}
 		}
 		if (downloadTempFile.exists() && !badTempFile) {
-			if ((readSize + downloadedTempFileSize) == fileTotalSize) {
+			long downloadTempFileSize = downloadTempFile.length();
+			if (downloadTempFileSize == fileTotalSize) {
 				final File renameFile = createRenameFile(getSaveFileAbsolutePath(fileName));
 				if (downloadTempFile.renameTo(renameFile)) {
 					isCompleted = true;
-					HLog.d("post download success");
+					HLog.d("Post download success");
 					postDonwloadSuccess(renameFile, FileFrom.INTERNET);
 					return;
 				} else {
 					HLog.e("Rename file failed, name:" + renameFile.getAbsolutePath());
 				}
 			} else {
-				HLog.d("size not equal");
+				HLog.d("Download paused");
+				postDownloadPause(downloadTempFile.getAbsolutePath(), downloadTempFileSize, fileTotalSize);
 			}
 		}
 
 	}
+
+	private void postDownloadPause(final String tempFilePath, final long downloadTempFileSize, final long fileTotalSize) {
+		if (downloadListener != null) {
+			postHandler.post(new Runnable() {
+				@Override
+				public void run() {
+					downloadListener.onPause(tempFilePath, downloadTempFileSize, fileTotalSize);
+				}
+			});
+		}
+	}
+	
 
 	/**
 	 * 重置size
