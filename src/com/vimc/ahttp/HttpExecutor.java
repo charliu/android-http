@@ -7,7 +7,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.DialogInterface.OnDismissListener;
+import android.content.DialogInterface.OnCancelListener;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -30,14 +30,22 @@ public class HttpExecutor {
 
 	public static final Executor HTTP_THREAD_POOL_EXECUTOR = ExecutorFactory.createExecutor(CORE_POOL_SIZE,
 			MAXIMUM_POOL_SIZE, THREAD_PRIORITY, sPoolWorkQueue);
-	
+
 	public static void execute(Request<?> request) {
 		HttpTask task = new HttpTask(request, mPoster, mHttpWorker);
 		HTTP_THREAD_POOL_EXECUTOR.execute(task);
 	}
 
+	/**
+	 * execute http request
+	 * 
+	 * @param request
+	 * @param context
+	 * @param showProgressBar
+	 *            是否显示加载对话框
+	 */
 	public static void execute(Request<?> request, Context context, boolean showProgressBar) {
-		request.dialog = createLoadingDialog(context, request);
+		request.dialog = createLoadingDialog(context, request, true);
 		HttpTask task = new HttpTask(request, mPoster, mHttpWorker);
 		if (showProgressBar) {
 			request.dialog.show();
@@ -45,14 +53,36 @@ public class HttpExecutor {
 		HTTP_THREAD_POOL_EXECUTOR.execute(task);
 	}
 
-	private static Dialog createLoadingDialog(Context context, final Request<?> request) {
+	/**
+	 * execute http request
+	 * 
+	 * @param request
+	 * @param context
+	 * @param showProgressBar
+	 *            是否显示加载对话框
+	 */
+	public static void execute(Request<?> request, Context context, boolean showProgressBar, boolean canAbort) {
+		request.dialog = createLoadingDialog(context, request, canAbort);
+		HttpTask task = new HttpTask(request, mPoster, mHttpWorker);
+		if (showProgressBar) {
+			request.dialog.show();
+		}
+		HTTP_THREAD_POOL_EXECUTOR.execute(task);
+	}
+
+	private static Dialog createLoadingDialog(Context context, final Request<?> request, final boolean canAbort) {
 		Dialog dialog = new LoadingDialog(context);
-		dialog.setOnDismissListener(new OnDismissListener() {
-			@Override
-			public void onDismiss(DialogInterface dialog) {
-				request.cancel();
-			}
-		});
+		dialog.setCanceledOnTouchOutside(false);
+		dialog.setCancelable(canAbort);
+		if (canAbort) {
+			dialog.setOnCancelListener(new OnCancelListener() {
+				@Override
+				public void onCancel(DialogInterface dialog) {
+					dialog.dismiss();
+					request.cancel();
+				}
+			});
+		}
 		return dialog;
 	}
 

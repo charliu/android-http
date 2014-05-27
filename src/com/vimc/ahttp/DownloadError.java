@@ -1,7 +1,7 @@
 package com.vimc.ahttp;
 
 @SuppressWarnings("serial")
-public class DownloadError extends Error {
+public class DownloadError extends HError {
 	private long fileTotalSize;
 	private long downloadedSize;
 	
@@ -9,9 +9,6 @@ public class DownloadError extends Error {
 		super(t, errorCode);
 	}
 
-	public DownloadError(int code) {
-		super(code);
-	}
 
 	public long getFileTotalSize() {
 		return fileTotalSize;

@@ -3,17 +3,19 @@ package com.vimc.ahttp;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.message.BasicNameValuePair;
 
-import android.app.Dialog;
-
 import com.vimc.ahttp.Response.ResponseListener;
+
+import android.app.Dialog;
 
 /**
  * Request抽象，提供如下功能: 请求信息封装 解析返回数据{@link #parseResponse(byte[])} 分发请求数据结果
@@ -26,15 +28,39 @@ import com.vimc.ahttp.Response.ResponseListener;
 public abstract class Request<T> {
 
 	private static String DEFAULT_PARAMS_ENCODING = "UTF-8";
+	public static final int DEFAULT_SO_TIMEOUT_MS = 40 * 1000; // 默认响应超时时间：40秒
 
-	protected final String mUrl;
-	protected Map<String, String> mHeaders;  //HTTP 头部
-	protected Map<String, String> mParams;   //HTTP 参数
-	protected final ResponseListener<T> mResponseListener; //HTTP请求回调
-	public int mMethod = RequestMethod.GET; // Reuqest Method
+	protected String mUrl;
+	protected Map<String, String> mHeaders = new HashMap<String, String>(); // HTTP
+																			// 头部
+	protected TreeMap<String, String> mParams = new TreeMap<String, String>(); // HTTP
+																			// 参数
+	protected ResponseListener<T> mResponseListener; // HTTP请求回调
+	public RequestType type = RequestType.POST; // Reuqest Method
 	public Dialog dialog;
-	protected String paramsEncoding = DEFAULT_PARAMS_ENCODING;
+	protected String paramsEncoding = DEFAULT_PARAMS_ENCODING; //encode type
+	private int soTimeoutMs = DEFAULT_SO_TIMEOUT_MS; // 可通过 setSoTimeout方法设置
 	protected boolean cancel = false;
+
+	public enum RequestType {
+		GET, POST, HEAD
+	}
+	
+	public Request() {
+	}
+
+	public Request(Map<String, String> params, ResponseListener<T> listener) {
+		addParams(params);
+		this.mResponseListener = listener;
+	}
+
+	public Request(String url, Map<String, String> headers, Map<String, String> params,
+			ResponseListener<T> listener) {
+		this.mUrl = url;
+		addHeaders(headers);
+		addParams(params);
+		this.mResponseListener = listener;
+	}
 
 	public boolean isCancled() {
 		return cancel;
@@ -44,24 +70,16 @@ public abstract class Request<T> {
 		cancel = true;
 	}
 
-	private int soTimeoutMs = 30000; //Response 响应超时时间：30秒
-
-	public interface RequestMethod {
-		int GET = 1;
-		int POST = 2;
-		int HEAD = 3;
+	public ResponseListener<T> getmResponseListener() {
+		return mResponseListener;
 	}
-	
-	public Request(String url, Map<String, String> header, Map<String, String> params, ResponseListener<T> listener) {
-		this.mUrl = url;
-		this.mHeaders = header;
-		this.mParams = params;
-		this.mResponseListener = listener;
+
+	public void setResponseListener(ResponseListener<T> mResponseListener) {
+		this.mResponseListener = mResponseListener;
 	}
 
 	/**
 	 * 解析返回数据
-	 * 
 	 * @param data
 	 * @return
 	 */
@@ -73,7 +91,7 @@ public abstract class Request<T> {
 		}
 	}
 
-	protected void dispatchError(Error error) {
+	protected void dispatchError(HError error) {
 		if (mResponseListener != null) {
 			mResponseListener.onError(error);
 		}
@@ -81,6 +99,14 @@ public abstract class Request<T> {
 
 	public int getSoTimeout() {
 		return soTimeoutMs;
+	}
+	
+	/**
+	 * 
+	 * @param soTimeoutMs 单位毫秒
+	 */
+	public void setSoTimeout(int soTimeoutMs) {
+		this.soTimeoutMs = soTimeoutMs;
 	}
 
 	public String getParamsEncoding() {
@@ -98,9 +124,13 @@ public abstract class Request<T> {
 	public String getUrl() {
 		return mUrl;
 	}
-	
+
+	public void setUrl(String mUrl) {
+		this.mUrl = mUrl;
+	}
+
 	public String getRequestUrl() {
-		if (getParams() == null) 
+		if (getParams() == null)
 			return mUrl;
 		return mUrl + "?" + new String(getBody());
 	}
@@ -113,22 +143,38 @@ public abstract class Request<T> {
 		this.mHeaders = headers;
 	}
 
+	public void addHeader(String name, String value) {
+		this.mHeaders.put(name, value);
+	}
+
+	public void addHeaders(Map<String, String> headers) {
+		if (headers != null) {
+			this.mHeaders.putAll(headers);
+		}
+	}
+
 	public Map<String, String> getParams() {
 		return mParams;
 	}
 
-	public void setParams(Map<String, String> mParams) {
+	public void setParams(TreeMap<String, String> mParams) {
 		this.mParams = mParams;
+	}
+
+	public void addParam(String name, String value) {
+		this.mParams.put(name, value);
+	}
+
+	public void addParams(Map<String, String> params) {
+		if (params != null) {
+			mParams.putAll(params);
+		}
 	}
 
 	public ResponseListener<T> getResponseListener() {
 		return mResponseListener;
 	}
 
-	public int getMethod() {
-		return mMethod;
-	}
-	
 	public byte[] getBody() {
 		Map<String, String> params = getParams();
 		if (params != null && params.size() > 0) {
@@ -136,7 +182,7 @@ public abstract class Request<T> {
 		}
 		return null;
 	}
-	
+
 	public HttpEntity getPostEntity() {
 		UrlEncodedFormEntity formEntity = null;
 		if (getParams() != null) {
@@ -152,9 +198,10 @@ public abstract class Request<T> {
 		}
 		return formEntity;
 	}
-	
+
 	/**
 	 * 编码参数
+	 * 
 	 * @param params
 	 * @param paramsEncoding
 	 * @return

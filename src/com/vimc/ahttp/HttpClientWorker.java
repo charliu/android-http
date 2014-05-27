@@ -74,18 +74,18 @@ public class HttpClientWorker implements HttpWorker {
 	}
 
 	private HttpUriRequest createUriRequest(Request<?> request) {
-		switch (request.mMethod) {
+		switch (request.type) {
 
-		case Request.RequestMethod.GET:
+		case GET:
 			return new HttpGet(request.getRequestUrl());
-		case Request.RequestMethod.POST:
+		case POST:
 			HttpPost postRequest = new HttpPost(request.getUrl());
 			HttpEntity entity = request.getPostEntity();
 			if (entity != null) {
 				postRequest.setEntity(entity);
 			}
 			return postRequest;
-		case Request.RequestMethod.HEAD:
+		case HEAD:
 			return new HttpHead(request.getRequestUrl());
 		default:
 			throw new IllegalArgumentException("Http request method not support");

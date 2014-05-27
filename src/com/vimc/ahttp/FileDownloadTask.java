@@ -262,7 +262,7 @@ public class FileDownloadTask {
 	}
 
 	private void postError(final IOException e) {
-		final DownloadError error = new DownloadError(e, Error.NETWORK_ERROR);
+		final DownloadError error = new DownloadError(e, HError.NETWORK_ERROR);
 		error.setFileTotalSize(fileTotalSize);
 		error.setDownloadedSize(readSize + downloadedTempFileSize);
 		if (downloadListener != null) {
@@ -342,7 +342,7 @@ public class FileDownloadTask {
 	 */
 	private void getFileTotalLengthByHeadRequest() {
 		FileRequest request = new FileRequest(fileUrl);
-		request.mMethod = Request.RequestMethod.HEAD;
+		request.type = Request.RequestType.HEAD;
 		HttpEntity headEntity = null;
 		try {
 			HttpResponse headResponse = httpWorker.doHttpRquest(request);

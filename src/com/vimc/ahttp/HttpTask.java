@@ -54,16 +54,16 @@ public class HttpTask implements Runnable {
 						response = request.parseResponse(data);
 						break;
 					} else {
-						response = Response.error(new Error(Error.SERVER_ERROR, "StatusCode 200 without response"));
+						response = Response.error(new HError(HError.SERVER_ERROR, "StatusCode 200 without response"));
 					}
 				} else {
-					response = Response.error(new Error(statusCode, "Server error statusCode not 200"));
+					response = Response.error(new HError(statusCode, "Server error statusCode not 200"));
 					break;
 				}
 			} catch (IOException e) {
 				if (HLog.Config.LOG_E)
 					e.printStackTrace();
-				response = Response.error(new Error(e, Error.NETWORK_ERROR, "IOException"));
+				response = Response.error(new HError(e, HError.NETWORK_ERROR, "IOException"));
 			}
 		}
 		if (!request.isCancled() && !isInterrupted()) {

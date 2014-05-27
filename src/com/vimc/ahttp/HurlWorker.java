@@ -27,8 +27,6 @@ import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicHttpResponse;
 import org.apache.http.message.BasicStatusLine;
 
-import com.vimc.ahttp.Request.RequestMethod;
-
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -249,16 +247,16 @@ public class HurlWorker implements HttpWorker {
 	}
 
 	static void setConnectionParametersForRequest(HttpURLConnection connection, Request<?> request) throws IOException {
-		switch (request.getMethod()) {
-		case RequestMethod.GET:
+		switch (request.type) {
+		case GET:
 			connection.setRequestMethod("GET");
 			addBodyIfExists(connection, request);
 			break;
-		case RequestMethod.POST:
+		case POST:
 			connection.setRequestMethod("POST");
 			addBodyIfExists(connection, request);
 			break;
-		case RequestMethod.HEAD:
+		case HEAD:
 			connection.setRequestMethod("HEAD");
 			addBodyIfExists(connection, request);
 			break;

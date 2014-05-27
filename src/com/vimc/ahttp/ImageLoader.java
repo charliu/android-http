@@ -2,12 +2,15 @@ package com.vimc.ahttp;
 
 import java.io.File;
 
+import com.vimc.ahttp.ImageLoadListener.LoadFrom;
+
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory.Options;
 import android.os.Environment;
 import android.os.Looper;
 import android.text.TextUtils;
+import android.view.animation.AlphaAnimation;
 import android.widget.ImageView;
 
 /**
@@ -33,15 +36,6 @@ public class ImageLoader {
 	private Cache<Bitmap> diskCache;
 	private ImageLoaderConfig loadConfig = null;
 	private boolean inited = false;
-
-	/**
-	 * 图片加载回调listener
-	 */
-	public interface ImageLoadListener {
-		void onSuccess(String imageUrl, ImageView imageView, Bitmap bitmap);
-
-		void onError(Error error);
-	}
 
 	private ImageLoader() {
 	}
@@ -145,16 +139,17 @@ public class ImageLoader {
 			engine.cancelDisplayTaskFor(imageWrapper);
 			return;
 		}
-
+		if (listener == null)
+			return;
 		final String cacheKey = MD5Util.generateMD5(url);
 		Bitmap cachedBitmap = engine.getFromMemoryCache(cacheKey);
 		if (cachedBitmap != null && !cachedBitmap.isRecycled()) {
 			HLog.d("Load Image from memory in MainThread, URL:" + url);
-			listener.onSuccess(url, imageWrapper.getImageView(), cachedBitmap);
+			listener.onSuccess(url, imageWrapper.getImageView(), cachedBitmap, LoadFrom.FROM_MEMORY);
 			engine.cancelDisplayTaskFor(imageWrapper);
 			return;
 		}
-		listener.onSuccess(url, imageWrapper.imageViewRef.get(), null);
+		listener.onSuccess(url, imageWrapper.imageViewRef.get(), null, LoadFrom.FROM_MEMORY);
 		engine.prepareDisplayTaskFor(imageWrapper, cacheKey);
 		
 		if (options == null) {
@@ -193,20 +188,28 @@ public class ImageLoader {
 			final int defaultImageResId, final int errorImageResId) {
 		return new ImageLoadListener() {
 			@Override
-			public void onError(Error error) {
+			public void onError(HError error) {
 				if (errorImageResId != 0) {
 					view.setImageResource(errorImageResId);
 				}
 			}
 
 			@Override
-			public void onSuccess(String url, ImageView view, Bitmap bitmap) {
+			public void onSuccess(String url, ImageView view, Bitmap bitmap, LoadFrom loadFrom) {
 				if (bitmap != null) {
+					if (loadFrom == LoadFrom.FROM_INTERNET) {
+						AlphaAnimation alphaAnimation = new AlphaAnimation(0.2f, 1f);
+						alphaAnimation.setDuration(1000);
+						alphaAnimation.setFillAfter(true);
+						view.clearAnimation();
+						view.startAnimation(alphaAnimation);
+					}
 					view.setImageBitmap(bitmap);
 				} else if (defaultImageResId != 0) {
 					view.setImageResource(defaultImageResId);
 				}
 			}
+
 		};
 	}
 

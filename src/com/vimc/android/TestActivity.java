@@ -9,7 +9,7 @@ import org.json.JSONObject;
 import com.vimc.ahttp.Pojo;
 import com.vimc.ahttp.R;
 import com.vimc.ahttp.DownloadError;
-import com.vimc.ahttp.Error;
+import com.vimc.ahttp.HError;
 import com.vimc.ahttp.FileDownloadTask;
 import com.vimc.ahttp.FileDownloader;
 import com.vimc.ahttp.HttpExecutor;
@@ -20,7 +20,7 @@ import com.vimc.ahttp.Response;
 import com.vimc.ahttp.StringRequest;
 import com.vimc.ahttp.FileDownloadTask.DownloadListener;
 import com.vimc.ahttp.FileDownloadTask.FileFrom;
-import com.vimc.ahttp.Request.RequestMethod;
+import com.vimc.ahttp.Request.RequestType;
 import com.vimc.ahttp.Response.ResponseListener;
 import com.vimc.android.mvc.BaseCallback;
 import com.vimc.android.mvc.BusinessModel;
@@ -69,10 +69,7 @@ public class TestActivity extends Activity {
 
 	@Override
 	protected void onResume() {
-		TelephonyManager manager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-		manager.getSimState();
-		Log.i("SIM", "sim:" + manager.getSimState());
-		Toast.makeText(this, "SIM:" + manager.getSimState() , 1).show();
+		super.onResume();
 	}
 
 
@@ -90,7 +87,7 @@ public class TestActivity extends Activity {
 				}
 
 				@Override
-				public void onError(Error error) {
+				public void onError(HError error) {
 
 				}
 			}, TestActivity.this);
@@ -130,12 +127,12 @@ public class TestActivity extends Activity {
 			}
 
 			@Override
-			public void onError(Error error) {
-				Toast.makeText(TestActivity.this, "请求错误, errorCode:" + error.errorCode + " msg:" + error.getMessage(),
+			public void onError(HError error) {
+				Toast.makeText(TestActivity.this, "请求错误, errorCode:" + error.getErrorCode() + " msg:" + error.getMessage(),
 						1).show();
 			}
 		});
-		HttpExecutor.execute(request, TestActivity.this, true);
+		HttpExecutor.execute(request, TestActivity.this, true, false);
 	}
 
 	private void jsonRequest() {
@@ -147,8 +144,8 @@ public class TestActivity extends Activity {
 			}
 
 			@Override
-			public void onError(Error error) {
-				Toast.makeText(TestActivity.this, error.errorDescription, 1).show();
+			public void onError(HError error) {
+				Toast.makeText(TestActivity.this, error.getErrorMsg(), 1).show();
 			}
 		});
 		HttpExecutor.execute(jsonRequest, TestActivity.this, true);
@@ -229,11 +226,11 @@ public class TestActivity extends Activity {
 			}
 
 			@Override
-			public void onError(Error e) {
-				Toast.makeText(TestActivity.this, e.errorDescription, Toast.LENGTH_LONG).show();
+			public void onError(HError e) {
+				Toast.makeText(TestActivity.this, e.getErrorMsg(), Toast.LENGTH_LONG).show();
 			}
 		});
-		request.mMethod = RequestMethod.POST;
+		request.type = RequestType.POST;
 		HttpExecutor.execute(request, this, true);
 	}
 
@@ -248,7 +245,7 @@ public class TestActivity extends Activity {
 			}
 
 			@Override
-			public void onError(Error e) {
+			public void onError(HError e) {
 				Toast.makeText(TestActivity.this, e.toString(), Toast.LENGTH_LONG).show();
 			}
 		}, TestPojo.class);

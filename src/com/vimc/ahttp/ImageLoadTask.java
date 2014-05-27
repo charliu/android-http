@@ -9,6 +9,9 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 
+import com.vimc.ahttp.ImageLoadListener.LoadFrom;
+import com.vimc.ahttp.Request.RequestType;
+
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapFactory.Options;
@@ -24,7 +27,8 @@ public class ImageLoadTask implements Runnable {
 	final ImageLoadingInfo loadingInfo;
 	final HttpWorker httpWorker;
 	private final Options defaultDecodeOptions = ImageLoader.getDefaultOptions();
-
+	private LoadFrom loadFrom;
+	
 	public ImageLoadTask(ImageLoadingInfo info, ImageLoaderEngine engine, HttpWorker worker) {
 		this.loadingInfo = info;
 		this.engine = engine;
@@ -45,6 +49,7 @@ public class ImageLoadTask implements Runnable {
 				return;
 			bitmap = engine.getFromMemoryCache(loadingInfo.cacheKey);
 			if (bitmap != null && !bitmap.isRecycled()) {
+				loadFrom = LoadFrom.FROM_MEMORY;
 				engine.post(new DispalyTask(loadingInfo, bitmap));
 				return;
 			}
@@ -77,9 +82,9 @@ public class ImageLoadTask implements Runnable {
 			}
 			engine.cancelDisplayTaskFor(info.imageWrapper);
 			if (bitmap != null) {
-				info.listener.onSuccess(info.uri, info.imageWrapper.getImageView(), bitmap);
+				info.listener.onSuccess(info.uri, info.imageWrapper.getImageView(), bitmap, loadFrom);
 			} else {
-				info.listener.onError(new Error(Error.UNKNOWN_ERROR));
+				info.listener.onError(new HError(HError.UNKNOWN_ERROR));
 			}
 
 		}
@@ -89,12 +94,15 @@ public class ImageLoadTask implements Runnable {
 	private Bitmap loadBitmap() throws IOException {
 		Bitmap bitmap = engine.getFromDiskCache(loadingInfo.cacheKey);
 		if (bitmap != null) {
+			loadFrom = LoadFrom.FORM_SDCARD;
 			engine.putToMemoryCache(loadingInfo.cacheKey, bitmap);
 			HLog.i("Load image from disk cache, URL:" + loadingInfo.uri);
 			return bitmap;
 		}
 		HLog.i("Starting download, URL:" + loadingInfo.uri);
+		loadFrom = LoadFrom.FROM_INTERNET;
 		Request<Bitmap> request = new BitmapRequest(loadingInfo.uri);
+		request.type = RequestType.GET;
 		HttpResponse httpResponse = httpWorker.doHttpRquest(request);
 		StatusLine statusLine = httpResponse.getStatusLine();
 		int statusCode = statusLine.getStatusCode();

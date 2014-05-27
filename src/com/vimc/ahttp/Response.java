@@ -10,14 +10,14 @@ package com.vimc.ahttp;
  */
 public class Response<T> {
 	public final T result;
-	public final Error error;
+	public final HError error;
 
 	public Response(T result) {
 		this.result = result;
 		this.error = null;
 	}
 
-	public Response(Error err) {
+	public Response(HError err) {
 		this.result = null;
 		this.error = err;
 	}
@@ -25,7 +25,7 @@ public class Response<T> {
 	public interface ResponseListener<T> {
 		void onSuccess(T response);
 
-		void onError(Error error);
+		void onError(HError error);
 	}
 
 	public boolean isSuccess() {
@@ -41,7 +41,7 @@ public class Response<T> {
 	 * Returns a failed response containing the given error code and an optional
 	 * localized message displayed to the user.
 	 */
-	public static <T> Response<T> error(Error error) {
+	public static <T> Response<T> error(HError error) {
 		return new Response<T>(error);
 	}
 

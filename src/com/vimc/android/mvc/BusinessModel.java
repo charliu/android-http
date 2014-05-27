@@ -5,10 +5,10 @@ import java.util.Map;
 
 import android.content.Context;
 
-import com.vimc.ahttp.Error;
+import com.vimc.ahttp.HError;
 import com.vimc.ahttp.HttpExecutor;
 import com.vimc.ahttp.StringRequest;
-import com.vimc.ahttp.Request.RequestMethod;
+import com.vimc.ahttp.Request.RequestType;
 import com.vimc.ahttp.Response.ResponseListener;
 
 public class BusinessModel {
@@ -24,11 +24,11 @@ public class BusinessModel {
 			}
 
 			@Override
-			public void onError(Error e) {
+			public void onError(HError e) {
 				callback.onError(e);
 			}
 		});
-		request.mMethod = RequestMethod.GET;
+		request.type = RequestType.GET;
 		HttpExecutor.execute(request, context, true);
 
 	}

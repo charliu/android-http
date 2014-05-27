@@ -4,8 +4,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import android.graphics.BitmapFactory.Options;
 
-import com.vimc.ahttp.ImageLoader.ImageLoadListener;
-
 /**
  * Loading图片信息封装
  * 
