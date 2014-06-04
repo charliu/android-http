@@ -20,12 +20,13 @@ import com.vimc.ahttp.Response;
 import com.vimc.ahttp.StringRequest;
 import com.vimc.ahttp.FileDownloadTask.DownloadListener;
 import com.vimc.ahttp.FileDownloadTask.FileFrom;
-import com.vimc.ahttp.Request.RequestType;
+import com.vimc.ahttp.Request.RequestMethod;
 import com.vimc.ahttp.Response.ResponseListener;
 import com.vimc.android.mvc.BaseCallback;
 import com.vimc.android.mvc.BusinessModel;
 
 import android.os.Bundle;
+import android.os.Environment;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -46,6 +47,8 @@ import android.widget.Toast;
  * 
  */
 public class TestActivity extends Activity {
+	
+	String fileSavePath = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "temp";
 	private ImageView image;
 	private BusinessModel model;
 	private ProgressBar progressBar;
@@ -172,7 +175,7 @@ public class TestActivity extends Activity {
 	}
 
 	private void createDownloadTask(String fileUrl) {
-		downloadTask = FileDownloader.download(fileUrl, new DownloadListener() {
+		downloadTask = FileDownloader.download(fileUrl, fileSavePath, new DownloadListener() {
 			@Override
 			public void onUpdateProgress(long currentSize, long totalSize, int percent) {
 				if (progressBar.getVisibility() == View.INVISIBLE) {
@@ -216,7 +219,7 @@ public class TestActivity extends Activity {
 	}
 
 	private void postStringRequest() {
-		String url = "http://www.webxml.com.cn/webservices/WeatherWebService.asmx/getSupportCity";
+		String url = "http://www.webxml.com.cn/webservices/WeatherWebService.asmx/getSupportCity?name=hello";
 		Map<String, String> map = new HashMap<String, String>();
 		map.put("byProvinceName", "北京");
 		StringRequest request = new StringRequest(url, null, map, new ResponseListener<String>() {
@@ -230,7 +233,7 @@ public class TestActivity extends Activity {
 				Toast.makeText(TestActivity.this, e.getErrorMsg(), Toast.LENGTH_LONG).show();
 			}
 		});
-		request.type = RequestType.POST;
+		request.requestMethod = RequestMethod.POST;
 		HttpExecutor.execute(request, this, true);
 	}
 
@@ -269,7 +272,7 @@ public class TestActivity extends Activity {
 			ImageLoader.getInstance().clearDiskCache();
 			break;
 		case 3:
-			File files = new File(FileDownloader.DEFAULT_FILE_SAVE_PATH);
+			File files = new File(fileSavePath);
 			if (files.exists() && files.isDirectory()) {
 				for (File f : files.listFiles()) {
 					f.delete();

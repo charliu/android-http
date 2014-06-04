@@ -12,6 +12,8 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 
+import com.vimc.ahttp.Request.RequestMethod;
+
 import android.os.Handler;
 import android.os.Looper;
 
@@ -47,8 +49,8 @@ public class FileDownloadTask {
 	 *            下载过程回调函数，可以为null
 	 */
 	FileDownloadTask(String url, String savePath, DownloadListener listener) {
-		this.fileUrl = url;
-		this.fileSavePath = savePath;
+		fileUrl = url;
+		fileSavePath = savePath;
 		httpWorker = HttpWorkerFactory.createHttpWorker();
 		fileName = getFileName(url);
 		tempFileName = MD5Util.generateMD5(fileUrl);
@@ -162,7 +164,7 @@ public class FileDownloadTask {
 		File downloadTempFile = new File(fileTempPath);
 		Map<String, String> headers = getRangeHeaderByFile(downloadTempFile);
 		FileRequest request = new FileRequest(fileUrl, headers);
-
+		request.requestMethod = RequestMethod.GET;
 		HttpEntity entity = null;
 		RandomAccessFile raf = null;
 		boolean badTempFile = false;
@@ -342,7 +344,8 @@ public class FileDownloadTask {
 	 */
 	private void getFileTotalLengthByHeadRequest() {
 		FileRequest request = new FileRequest(fileUrl);
-		request.type = Request.RequestType.HEAD;
+		request.requestMethod = RequestMethod.GET;
+		request.requestMethod = Request.RequestMethod.HEAD;
 		HttpEntity headEntity = null;
 		try {
 			HttpResponse headResponse = httpWorker.doHttpRquest(request);

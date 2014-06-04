@@ -74,7 +74,7 @@ public class HttpClientWorker implements HttpWorker {
 	}
 
 	private HttpUriRequest createUriRequest(Request<?> request) {
-		switch (request.type) {
+		switch (request.requestMethod) {
 
 		case GET:
 			return new HttpGet(request.getRequestUrl());

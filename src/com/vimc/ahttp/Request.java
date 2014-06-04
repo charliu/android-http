@@ -36,13 +36,13 @@ public abstract class Request<T> {
 	protected TreeMap<String, String> mParams = new TreeMap<String, String>(); // HTTP
 																			// 参数
 	protected ResponseListener<T> mResponseListener; // HTTP请求回调
-	public RequestType type = RequestType.POST; // Reuqest Method
+	public RequestMethod requestMethod = RequestMethod.POST; // Reuqest Method
 	public Dialog dialog;
 	protected String paramsEncoding = DEFAULT_PARAMS_ENCODING; //encode type
 	private int soTimeoutMs = DEFAULT_SO_TIMEOUT_MS; // 可通过 setSoTimeout方法设置
 	protected boolean cancel = false;
 
-	public enum RequestType {
+	public enum RequestMethod {
 		GET, POST, HEAD
 	}
 	

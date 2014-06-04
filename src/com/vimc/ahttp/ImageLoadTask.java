@@ -10,7 +10,7 @@ import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 
 import com.vimc.ahttp.ImageLoadListener.LoadFrom;
-import com.vimc.ahttp.Request.RequestType;
+import com.vimc.ahttp.Request.RequestMethod;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -102,7 +102,7 @@ public class ImageLoadTask implements Runnable {
 		HLog.i("Starting download, URL:" + loadingInfo.uri);
 		loadFrom = LoadFrom.FROM_INTERNET;
 		Request<Bitmap> request = new BitmapRequest(loadingInfo.uri);
-		request.type = RequestType.GET;
+		request.requestMethod = RequestMethod.GET;
 		HttpResponse httpResponse = httpWorker.doHttpRquest(request);
 		StatusLine statusLine = httpResponse.getStatusLine();
 		int statusCode = statusLine.getStatusCode();

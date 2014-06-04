@@ -247,7 +247,7 @@ public class HurlWorker implements HttpWorker {
 	}
 
 	static void setConnectionParametersForRequest(HttpURLConnection connection, Request<?> request) throws IOException {
-		switch (request.type) {
+		switch (request.requestMethod) {
 		case GET:
 			connection.setRequestMethod("GET");
 			addBodyIfExists(connection, request);
