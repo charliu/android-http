@@ -2,11 +2,14 @@ package com.vimc.ahttp;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
+import org.apache.http.conn.ConnectTimeoutException;
 
 /**
  * Http 请求任务
@@ -52,6 +55,9 @@ public class HttpTask implements Runnable {
 					if (httpResponse.getEntity() != null) {
 						byte[] data = entityToBytes(httpResponse.getEntity());
 						response = request.parseResponse(data);
+						if (response == null) {
+							response = Response.error(new HError(HError.PARSE_ERROR, "Parse result is null"));
+						}
 						break;
 					} else {
 						response = Response.error(new HError(HError.SERVER_ERROR, "StatusCode 200 without response"));
@@ -60,10 +66,16 @@ public class HttpTask implements Runnable {
 					response = Response.error(new HError(statusCode, "Server error statusCode not 200"));
 					break;
 				}
-			} catch (IOException e) {
+			} catch (SocketTimeoutException e) {
+				response = Response.error(new HError(e, HError.NETWORK_ERROR, "Socket Timeout"));
+			} catch (ConnectTimeoutException e) {
+				response = Response.error(new HError(e, HError.NETWORK_ERROR, "Connect Timeout"));
+            } catch (MalformedURLException e) {
+            	response = Response.error(new HError(e, HError.NETWORK_ERROR, "Malformed URL"));
+            } catch (IOException e) {
 				if (HLog.Config.LOG_E)
 					e.printStackTrace();
-				response = Response.error(new HError(e, HError.NETWORK_ERROR, "IOException"));
+				response = Response.error(new HError(e, HError.NETWORK_ERROR, "IOException, error:" + e.getMessage()));
 			}
 		}
 		if (!request.isCancled() && !isInterrupted()) {

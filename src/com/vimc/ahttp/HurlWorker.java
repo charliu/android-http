@@ -182,6 +182,7 @@ public class HurlWorker implements HttpWorker {
 		connection.setReadTimeout(timeoutMs);
 		connection.setUseCaches(false);
 		connection.setDoInput(true);
+//		connection.setRequestProperty("Connection", "close");
 
 		if ("https".equals(url.getProtocol())) {
 			if (mSslSocketFactory != null) {

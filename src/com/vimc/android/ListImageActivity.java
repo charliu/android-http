@@ -1,10 +1,14 @@
 package com.vimc.android;
 
+import java.io.IOException;
+
 import com.vimc.ahttp.R;
 import com.vimc.ahttp.ImageLoader;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -14,6 +18,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class ListImageActivity extends Activity {
 	private ListView listView;
@@ -24,6 +29,12 @@ public class ListImageActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		Intent intent = getIntent();
+		String a = intent.getExtras().getString("key");
+		if (TextUtils.isEmpty(a)) 
+			throw new IllegalArgumentException();
+		else 
+			Toast.makeText(this, "params:" + a, 1).show();
 		setContentView(R.layout.list);
 		listView = (ListView) findViewById(R.id.list_view);
 		adapter = new MyAdapter();

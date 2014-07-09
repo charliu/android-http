@@ -56,6 +56,7 @@ public class HttpClientWorker implements HttpWorker {
 	@Override
 	public HttpResponse doHttpRquest(Request<?> request) throws IOException {
 		HttpUriRequest httpRequest = createUriRequest(request);
+//		httpRequest.setHeader("Connection", "close");
 		addRequestHeader(httpRequest, request.getHeaders());
 		HttpParams httpParams = httpRequest.getParams();
 		int timeoutMs = request.getSoTimeout();
