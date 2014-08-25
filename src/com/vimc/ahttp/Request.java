@@ -83,7 +83,7 @@ public abstract class Request<T> {
 	 * @param data
 	 * @return
 	 */
-	public abstract Response<T> parseResponse(byte[] data);
+	public abstract Response<T> parseResponse(NetworkResponse response);
 
 	protected void dispatchResponse(T response) {
 		if (mResponseListener != null) {

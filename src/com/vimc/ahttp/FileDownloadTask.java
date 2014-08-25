@@ -441,5 +441,24 @@ public class FileDownloadTask {
 		}
 		return file;
 	}
+	
+	
+	private class FileRequest extends Request<File>{
+
+		
+		public FileRequest(String fileUrl) {
+			super(fileUrl, null, null, null);
+		}
+		
+		public FileRequest(String url, Map<String, String> header) {
+			super(url, header, null, null);
+		}
+		
+		@Override
+		public Response<File> parseResponse(NetworkResponse response) {
+			return null;
+		}
+
+	}
 
 }

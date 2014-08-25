@@ -1,5 +1,6 @@
 package com.vimc.ahttp;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
 import org.json.JSONException;
@@ -20,10 +21,15 @@ public class JsonRequest extends Request<JSONObject>{
 	}
 
 	@Override
-	public Response<JSONObject> parseResponse(byte[] data) {
+	public Response<JSONObject> parseResponse(NetworkResponse response) {
 		try {
-			String jsonStr = new String(data);
-			return Response.success(new JSONObject(jsonStr));
+			String parsed;
+	        try {
+	            parsed = new String(response.data, response.getCharset());
+	        } catch (UnsupportedEncodingException e) {
+	            parsed = new String(response.data);
+	        }
+			return Response.success(new JSONObject(parsed));
 		} catch (JSONException e) {
 			if (HLog.Config.LOG_E)
 				e.printStackTrace();

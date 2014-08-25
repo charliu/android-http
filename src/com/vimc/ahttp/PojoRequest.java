@@ -1,5 +1,6 @@
 package com.vimc.ahttp;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
 import com.vimc.ahttp.Response.ResponseListener;
@@ -15,11 +16,19 @@ public class PojoRequest<T extends Pojo> extends Request<T>{
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public Response<T> parseResponse(byte[] data) {
+	public Response<T> parseResponse(NetworkResponse response) {
 		try {
-			T mCls = cls.newInstance();
-			Pojo result = mCls.parse(new String(data));
-			return Response.success((T)result);
+			String parsed;
+	        try {
+	            parsed = new String(response.data, response.getCharset());
+	        } catch (UnsupportedEncodingException e) {
+	            parsed = new String(response.data);
+	        }
+	        if (parsed != null) {
+				T mCls = cls.newInstance();
+				Pojo result = mCls.parse(new String(response.data));
+				return Response.success((T)result);
+	        }
 		} catch (InstantiationException e) {
 			e.printStackTrace();
 		} catch (IllegalAccessException e) {

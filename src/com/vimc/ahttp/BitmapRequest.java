@@ -29,13 +29,14 @@ public class BitmapRequest extends Request<Bitmap> {
 	public Bitmap mResponse;
 
 	@Override
-	public Response<Bitmap> parseResponse(byte[] data) {
+	public Response<Bitmap> parseResponse(NetworkResponse response) {
 		Options options = new Options();
 		options.inPreferredConfig = mConfig;
 		options.inPreferredConfig = Bitmap.Config.RGB_565;
 		synchronized (sDecodeLock) {
 			try {
-				Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length, options);
+				byte[] data = response.data;
+				Bitmap bitmap = BitmapFactory.decodeByteArray(response.data, 0, data.length, options);
 				if (bitmap != null) {
 					return Response.success(bitmap);
 				} else {
