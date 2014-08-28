@@ -50,6 +50,20 @@
                 android:text="Pojo Request" />
 
             <Button
+                android:id="@+id/badUrlRequest"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:onClick="onClickButton"
+                android:text="Bad Url Request" />
+
+            <Button
+                android:id="@+id/unknownHostRequest"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:onClick="onClickButton"
+                android:text="Unknown Host Request" />
+
+            <Button
                 android:id="@+id/bitmapRequest"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
@@ -76,6 +90,12 @@
                 android:layout_height="wrap_content"
                 android:onClick="onClickButton"
                 android:text="DownloadFile" />
+            <Button
+                android:id="@+id/upload_file"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:onClick="onClickButton"
+                android:text="UploadFile" />
 
             <ProgressBar
                 android:id="@+id/progressBar"

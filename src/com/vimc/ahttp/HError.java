@@ -38,7 +38,7 @@ public class HError extends Throwable {
 	}
 
 	public String getErrorMsg() {
-		return errorMsg + " Error Stack:" + getMessage();
+		return errorMsg + "ErrorCode:" + errorCode + " Stack:" + getMessage();
 	}
 	
 	public int getErrorCode() {

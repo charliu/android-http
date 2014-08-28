@@ -14,16 +14,19 @@ import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.conn.ConnectTimeoutException;
 
+import android.util.Log;
+
 /**
  * Http 请求任务
  * 
  * @author CharLiu
  * 
  */
+@SuppressWarnings("unchecked")
 public class HttpTask implements Runnable {
 
 	private static int DEFAULT_POOL_SIZE = 4096;
-	private Request<?> request;
+	private Request request;
 	private final HttpWorker httpWork;
 	private ByteArrayPool mPool;
 	private ResponsePoster mPoster;
@@ -64,11 +67,17 @@ public class HttpTask implements Runnable {
 						data = new byte[0];
 					}
 					response = request.parseResponse(new NetworkResponse(data, headers));
-					if (response == null) {
+					if (response != null) {
+						request.dispatchResponseInThread(response.result);
+					} else {
 						response = Response.error(new HError(HError.PARSE_ERROR, "Parse result is null"));
 					}
 					break; //SC == 200 时不再重试
 				} else {
+					if (httpResponse.getEntity() != null) {
+						byte[] data = entityToBytes(httpResponse.getEntity());
+						Log.d("xxx", "response:" + new String(data));
+					}
 					response = Response.error(new HError(statusCode, "Server error statusCode not 200"));
 				}
 			} catch (SocketTimeoutException e) {
@@ -81,6 +90,10 @@ public class HttpTask implements Runnable {
 				if (HLog.Config.LOG_E)
 					e.printStackTrace();
 				response = Response.error(new HError(e, HError.NETWORK_ERROR, "IOException, error:" + e.getMessage()));
+			} catch (Throwable t) {
+				if (HLog.Config.LOG_E)
+					t.printStackTrace();
+				response = Response.error(new HError(t, HError.UNKNOWN_ERROR, "IOException, error:" + t.getMessage()));
 			}
 		}
 		if (!request.isCancled() && !isInterrupted()) {

@@ -11,7 +11,7 @@ public final class HttpWorkerFactory {
 
 	public static HttpWorker createHttpWorker() {
 //		return new HurlWorker();
-//		return new HttpClientWorker();
+//		return new HttpClientWorker(null);
 		if (Build.VERSION.SDK_INT >= 9) {
 			return new HurlWorker();
 		} else {

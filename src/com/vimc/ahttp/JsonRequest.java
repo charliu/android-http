@@ -14,7 +14,10 @@ import com.vimc.ahttp.Response.ResponseListener;
  *
  */
 public class JsonRequest extends Request<JSONObject>{
-
+	public JsonRequest(String url) {
+		super(url, null, null, null);
+	}
+	
 	public JsonRequest(String url, Map<String, String> header, Map<String, String> params,
 			ResponseListener<JSONObject> listener) {
 		super(url, header, params, listener);
@@ -29,6 +32,7 @@ public class JsonRequest extends Request<JSONObject>{
 	        } catch (UnsupportedEncodingException e) {
 	            parsed = new String(response.data);
 	        }
+	        HLog.d("Response:" + parsed);
 			return Response.success(new JSONObject(parsed));
 		} catch (JSONException e) {
 			if (HLog.Config.LOG_E)

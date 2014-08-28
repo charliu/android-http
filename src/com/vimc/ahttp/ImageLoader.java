@@ -30,7 +30,7 @@ public class ImageLoader {
 	private static String DEFAULT_DISK_CACHE_DIR = "texas" + File.separator + ".Cache";
 	
 	//默认图片内存缓存size为heapsize的1/8
-	private static final int DEFAULT_MEMORY_CACHE_SIZE = (int) (Runtime.getRuntime().maxMemory() / (1024 * 8)); 
+	public static final int DEFAULT_MEMORY_CACHE_SIZE = (int) (Runtime.getRuntime().maxMemory() / (1024 * 8)); 
 
 	private Cache<Bitmap> memoryCache;
 	private Cache<Bitmap> diskCache;
@@ -126,11 +126,11 @@ public class ImageLoader {
 				ImageLoader.getImageLoadListener(imageUrl, view, defaultImage, errorImage), null);
 	}
 	
-	public void load(final String imageUrl, ImageView view, final ImageLoadListener listener) {
-		load(imageUrl, new ImageViewWrapper(view), listener, null);
+	public void load(final String imageUrl, final ImageLoadListener listener) {
+		load(imageUrl, new ImageViewWrapper(null), listener, null);
 	}
 
-	private void load(final String url, final ImageViewWrapper imageWrapper, final ImageLoadListener listener, Options options) {
+	private void load(final String url, ImageViewWrapper imageWrapper, final ImageLoadListener listener, Options options) {
 		if (!inited) {
 			throw new IllegalStateException("ImageLoader must be init with ImageLoaderConfig before use");
 		}
@@ -139,17 +139,20 @@ public class ImageLoader {
 			engine.cancelDisplayTaskFor(imageWrapper);
 			return;
 		}
-		if (listener == null)
-			return;
+		
 		final String cacheKey = MD5Util.generateMD5(url);
 		Bitmap cachedBitmap = engine.getFromMemoryCache(cacheKey);
 		if (cachedBitmap != null && !cachedBitmap.isRecycled()) {
 			HLog.d("Load Image from memory in MainThread, URL:" + url);
-			listener.onSuccess(url, imageWrapper.getImageView(), cachedBitmap, LoadFrom.FROM_MEMORY);
+			if (listener != null) {
+				listener.onSuccess(url, cachedBitmap, LoadFrom.FROM_MEMORY);
+			}
 			engine.cancelDisplayTaskFor(imageWrapper);
 			return;
 		}
-		listener.onSuccess(url, imageWrapper.imageViewRef.get(), null, LoadFrom.FROM_MEMORY);
+		if (listener != null) {
+			listener.onSuccess(url, null, LoadFrom.FROM_RESOURCE);
+		}
 		engine.prepareDisplayTaskFor(imageWrapper, cacheKey);
 		
 		if (options == null) {
@@ -159,6 +162,7 @@ public class ImageLoader {
 				options = getDefaultOptions();
 			}
 		}
+		
 		ImageLoadingInfo loadingInfo = new ImageLoadingInfo(url, imageWrapper, listener, cacheKey,
 				engine.getLockForUri(url), options);
 		ImageLoadTask loadingTask = new ImageLoadTask(loadingInfo, engine, mHttpWorker);
@@ -186,7 +190,9 @@ public class ImageLoader {
 	 */
 	public static ImageLoadListener getImageLoadListener(final String url, final ImageView view,
 			final int defaultImageResId, final int errorImageResId) {
+		
 		return new ImageLoadListener() {
+			
 			@Override
 			public void onError(HError error) {
 				if (errorImageResId != 0) {
@@ -195,7 +201,7 @@ public class ImageLoader {
 			}
 
 			@Override
-			public void onSuccess(String url, ImageView view, Bitmap bitmap, LoadFrom loadFrom) {
+			public void onSuccess(String url, Bitmap bitmap, LoadFrom loadFrom) {
 				if (bitmap != null) {
 					if (loadFrom == LoadFrom.FROM_INTERNET) {
 						AlphaAnimation alphaAnimation = new AlphaAnimation(0.2f, 1f);
@@ -212,6 +218,7 @@ public class ImageLoader {
 
 		};
 	}
+	
 
 	/**
 	 * 默认decode options,使用RGB_565
@@ -234,7 +241,7 @@ public class ImageLoader {
 			diskCache.clear();
 	}
 
-	static class ImageLoaderConfig {
+	public static class ImageLoaderConfig {
 		public String diskCacheDir; //图片磁盘缓存根路径
 		public int memoryCacheSize = -1; //图片内存缓存大小,单位(byte)
 		public Options decodeOptions; //默认的图片decode参数

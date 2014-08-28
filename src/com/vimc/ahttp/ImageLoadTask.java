@@ -82,7 +82,7 @@ public class ImageLoadTask implements Runnable {
 			}
 			engine.cancelDisplayTaskFor(info.imageWrapper);
 			if (bitmap != null) {
-				info.listener.onSuccess(info.uri, info.imageWrapper.getImageView(), bitmap, loadFrom);
+				info.listener.onSuccess(info.uri, bitmap, loadFrom);
 			} else {
 				info.listener.onError(new HError(HError.UNKNOWN_ERROR));
 			}
@@ -137,6 +137,8 @@ public class ImageLoadTask implements Runnable {
 	}
 
 	private boolean taskNotActual(String logPrefix) {
+		if (loadingInfo.imageWrapper.isNullImageView())
+			return false;
 		if (loadingInfo.imageWrapper.isCollected()) {
 			HLog.w(logPrefix + " ImageView is collected");
 			return true;

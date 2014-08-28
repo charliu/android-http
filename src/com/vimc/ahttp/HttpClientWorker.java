@@ -1,8 +1,11 @@
 package com.vimc.ahttp;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -15,7 +18,6 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -28,12 +30,17 @@ import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
+
+import android.util.Log;
 
 /**
  * Use HttpClient execute an request, return HttpReqponse
@@ -56,12 +63,11 @@ public class HttpClientWorker implements HttpWorker {
 	@Override
 	public HttpResponse doHttpRquest(Request<?> request) throws IOException {
 		HttpUriRequest httpRequest = createUriRequest(request);
-//		httpRequest.setHeader("Connection", "close");
+		// httpRequest.setHeader("Connection", "close");
 		addRequestHeader(httpRequest, request.getHeaders());
 		HttpParams httpParams = httpRequest.getParams();
-		int timeoutMs = request.getSoTimeout();
-		HttpConnectionParams.setConnectionTimeout(httpParams, 5000);
-		HttpConnectionParams.setSoTimeout(httpParams, timeoutMs);
+		HttpConnectionParams.setConnectionTimeout(httpParams, request.connectTimeout);
+		HttpConnectionParams.setSoTimeout(httpParams, request.soTimeout);
 
 		return mClient.execute(httpRequest);
 	}
@@ -74,20 +80,31 @@ public class HttpClientWorker implements HttpWorker {
 		}
 	}
 
-	private HttpUriRequest createUriRequest(Request<?> request) {
+	private HttpUriRequest createUriRequest(Request<?> request) throws UnsupportedEncodingException {
 		switch (request.requestMethod) {
 
 		case GET:
-			return new HttpGet(request.getRequestUrl());
+			return new HttpGet(request.getFullGetRequestUrl());
 		case POST:
 			HttpPost postRequest = new HttpPost(request.getUrl());
-			HttpEntity entity = request.getPostEntity();
-			if (entity != null) {
-				postRequest.setEntity(entity);
+			if (!request.containsBinaryData()) {
+				postRequest.setEntity(request.getStringHttpEntity());
+			} else {
+				MultipartEntity entitys = new MultipartEntity();
+				Map<String, String> stringParams = request.getStringParams();
+				for (String key : stringParams.keySet()) {
+					entitys.addPart(key, new StringBody(stringParams.get(key), Charset.forName(request.getParamsEncoding())));
+				}
+				Map<String, File> fileParams = request.getFileParams();
+				for (String fileName : fileParams.keySet()) {
+					entitys.addPart(fileName, new FileBody(fileParams.get(fileName)));
+				}
+				postRequest.setEntity(entitys);
 			}
+
 			return postRequest;
 		case HEAD:
-			return new HttpHead(request.getRequestUrl());
+			return new HttpHead(request.getFullGetRequestUrl());
 		default:
 			throw new IllegalArgumentException("Http request method not support");
 		}

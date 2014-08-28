@@ -28,6 +28,8 @@ import org.apache.http.message.BasicHttpResponse;
 import org.apache.http.message.BasicStatusLine;
 
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -35,8 +37,8 @@ import java.net.URL;
 import java.security.KeyStore;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -104,9 +106,9 @@ public class HurlWorker implements HttpWorker {
 		URL parsedUrl = new URL(url);
 		HttpURLConnection connection = openConnection(parsedUrl, request);
 		addHeadersIfExists(request, connection);
-		setConnectionParametersForRequest(connection, request);
+		setConnectionParametersByRequest(connection, request);
 		// Initialize HttpResponse with data from the HttpURLConnection.
-		ProtocolVersion protocolVersion = new ProtocolVersion("HTTPS", 1, 1);
+		ProtocolVersion protocolVersion = new ProtocolVersion("HTTP", 1, 1);
 		int responseCode = connection.getResponseCode();
 		if (responseCode == -1) {
 			// -1 is returned by getResponseCode() if the response code could
@@ -130,8 +132,7 @@ public class HurlWorker implements HttpWorker {
 
 	private void addHeadersIfExists(Request<?> request, HttpURLConnection conn) {
 		if (request.getHeaders() != null && request.getHeaders().size() > 0) {
-			HashMap<String, String> map = new HashMap<String, String>();
-			map.putAll(request.getHeaders());
+			Map<String, String> map = request.getHeaders();
 			for (String headerName : map.keySet()) {
 				conn.addRequestProperty(headerName, map.get(headerName));
 			}
@@ -177,12 +178,11 @@ public class HurlWorker implements HttpWorker {
 	private HttpURLConnection openConnection(URL url, Request<?> request) throws IOException {
 		HttpURLConnection connection = createConnection(url);
 
-		int timeoutMs = request.getSoTimeout();
-		connection.setConnectTimeout(timeoutMs);
-		connection.setReadTimeout(timeoutMs);
+		connection.setConnectTimeout(request.connectTimeout);
+		connection.setReadTimeout(request.soTimeout);
 		connection.setUseCaches(false);
 		connection.setDoInput(true);
-//		connection.setRequestProperty("Connection", "close");
+		// connection.setRequestProperty("Connection", "close");
 
 		if ("https".equals(url.getProtocol())) {
 			if (mSslSocketFactory != null) {
@@ -247,7 +247,7 @@ public class HurlWorker implements HttpWorker {
 		}
 	}
 
-	static void setConnectionParametersForRequest(HttpURLConnection connection, Request<?> request) throws IOException {
+	private void setConnectionParametersByRequest(HttpURLConnection connection, Request<?> request) throws IOException {
 		switch (request.requestMethod) {
 		case GET:
 			connection.setRequestMethod("GET");
@@ -266,14 +266,64 @@ public class HurlWorker implements HttpWorker {
 		}
 	}
 
-	private static void addBodyIfExists(HttpURLConnection connection, Request<?> request) throws IOException {
-		byte[] body = request.getBody();
-		if (body != null) {
+	private void addBodyIfExists(HttpURLConnection connection, Request<?> request) throws IOException {
+		if (request.containsBinaryData()) {
 			connection.setDoOutput(true);
 			connection.addRequestProperty(HEADER_CONTENT_TYPE, request.getBodyContentType());
 			DataOutputStream out = new DataOutputStream(connection.getOutputStream());
-			out.write(body);
+			if (request.getStringParams().size() > 0) {
+				writeField(request.getStringParams(), out, request.getBoundray());
+			}
+			Map<String, File> fileParams = request.getFileParams();
+			for (String fileName : fileParams.keySet()) {
+				writeFile(out, fileName, fileParams.get(fileName), request.getBoundray());
+			}
 			out.close();
+		} else {
+			byte[] body = request.getStringBody();
+			if (body != null) {
+				connection.setDoOutput(true);
+				connection.addRequestProperty(HEADER_CONTENT_TYPE, request.getBodyContentType());
+				DataOutputStream out = new DataOutputStream(connection.getOutputStream());
+				out.write(body);
+				out.close();
+			}
 		}
+	}
+
+	String twoHyphens = "--", LINE_END = "\r\n";
+	String MULTIPART_FORM_DATA = "multipart/form-data";
+
+	private void writeField(Map<String, String> params, DataOutputStream output, String boundary) throws IOException {
+		StringBuilder sb = new StringBuilder();
+        for(String key : params.keySet()) {  
+            sb.append(twoHyphens + boundary + LINE_END);  
+            sb.append("Content-Disposition: form-data; name=\"" + key + "\"" + LINE_END);  
+            sb.append(LINE_END);  
+            sb.append(params.get(key) + LINE_END);  
+        }  
+        output.writeBytes(sb.toString());// 发送表单字段数据  
+	}
+	private void writeFile(DataOutputStream out, String keyName, File file, String boundary) throws IOException {
+		StringBuffer sb = new StringBuffer();
+		sb.append(twoHyphens);
+		sb.append(boundary);
+		sb.append(LINE_END);
+
+		sb.append("Content-Disposition: form-data; name=\"" + keyName + "\"; filename=\"" + file.getName() + "\"" + LINE_END);
+		sb.append("Content-Type: application/octet-stream; charset=" + "utf-8" + LINE_END);
+		sb.append(LINE_END);
+		out.write(sb.toString().getBytes());
+		InputStream is = new FileInputStream(file);
+		byte[] bytes = new byte[1024];
+		int len = 0;
+		while ((len = is.read(bytes)) != -1) {
+			out.write(bytes, 0, len);
+		}
+		is.close();
+		out.write(LINE_END.getBytes());
+		byte[] end_data = (twoHyphens + boundary + twoHyphens + LINE_END).getBytes();
+		out.write(end_data);
+		out.flush();
 	}
 }

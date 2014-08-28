@@ -11,16 +11,24 @@ import android.widget.ImageView;
 /**
  * 
  * @author charliu
- *
+ * 
  */
 public class ImageViewWrapper {
 
 	protected Reference<ImageView> imageViewRef;
+	private boolean isNullImageView = false;
 
 	public ImageViewWrapper(ImageView imageView) {
+		if (imageView == null) {
+			isNullImageView = true;
+		}
 		imageViewRef = new WeakReference<ImageView>(imageView);
 	}
 
+	public boolean isNullImageView() {
+		return isNullImageView;
+	}
+	
 	public ImageView getImageView() {
 		return imageViewRef.get();
 	}

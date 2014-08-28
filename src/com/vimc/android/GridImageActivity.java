@@ -1,6 +1,5 @@
 package com.vimc.android;
 
-import com.vimc.ahttp.HLog;
 import com.vimc.ahttp.R;
 import com.vimc.ahttp.ImageLoader;
 
@@ -50,7 +49,6 @@ public class GridImageActivity extends Activity {
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
 			final ViewHolder holder;
-			HLog.i("GetView position:" + position + " URL:" + IMAGES[position]);
 			if (convertView == null) {
 				convertView = LayoutInflater.from(GridImageActivity.this).inflate(R.layout.grid_item, null);
 				holder = new ViewHolder();

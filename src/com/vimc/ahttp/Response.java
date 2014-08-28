@@ -24,7 +24,9 @@ public class Response<T> {
 
 	public interface ResponseListener<T> {
 		void onSuccess(T response);
-
+		
+		void onComplete(T response);
+		
 		void onError(HError error);
 	}
 

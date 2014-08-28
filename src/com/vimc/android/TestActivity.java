@@ -3,10 +3,11 @@ package com.vimc.android;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.json.JSONObject;
 
-import com.vimc.ahttp.Pojo;
+import com.vimc.ahttp.ImageLoadListener;
 import com.vimc.ahttp.R;
 import com.vimc.ahttp.DownloadError;
 import com.vimc.ahttp.HError;
@@ -28,12 +29,8 @@ import com.vimc.android.mvc.BusinessModel;
 import android.os.Bundle;
 import android.os.Environment;
 import android.app.Activity;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
-import android.telephony.TelephonyManager;
+import android.graphics.Bitmap;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -72,6 +69,7 @@ public class TestActivity extends Activity {
 	}
 	
 	
+	
 
 	@Override
 	protected void onResume() {
@@ -107,6 +105,12 @@ public class TestActivity extends Activity {
 		case R.id.pojoRequest:
 			pojoRequest();
 			break;
+		case R.id.badUrlRequest:
+			badUrlRequest();
+			break;
+		case R.id.unknownHostRequest:
+			unknownHostRequest();
+			break;
 		case R.id.bitmapRequest:
 			bitmapRequest();
 			break;
@@ -120,8 +124,59 @@ public class TestActivity extends Activity {
 		case R.id.file_download:
 			downloadFile();
 			break;
+		case R.id.upload_file:
+			startActivity(new Intent(TestActivity.this, UploadFileActivity.class));
+			break;
 		}
 	}
+
+	private void unknownHostRequest() {
+		String unknownUrl = "http://www.xxooxx.com";
+		JsonRequest request = new JsonRequest(unknownUrl, null, null, new ResponseListener<JSONObject>() {
+
+			@Override
+			public void onSuccess(JSONObject response) {
+				Toast.makeText(TestActivity.this, "response:" + response.toString(), 1).show();
+			}
+
+			@Override
+			public void onError(HError error) {
+				Toast.makeText(TestActivity.this, "error:" + error.getErrorMsg(), 1).show();
+			}
+
+			@Override
+			public void onComplete(JSONObject response) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
+		HttpExecutor.execute(request, TestActivity.this, true);
+	}
+
+	private void badUrlRequest() {
+		String unknownUrl = "hkjsttp:/^^:/sssww,,wsdf.xxoo..xx.co?%m..";
+		JsonRequest request = new JsonRequest(unknownUrl, null, null, new ResponseListener<JSONObject>() {
+
+			@Override
+			public void onSuccess(JSONObject response) {
+				Toast.makeText(TestActivity.this, "response:" + response.toString(), 1).show();
+			}
+
+			@Override
+			public void onError(HError error) {
+				Toast.makeText(TestActivity.this, "error:" + error.getErrorMsg(), 1).show();
+			}
+
+			@Override
+			public void onComplete(JSONObject response) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
+		HttpExecutor.execute(request, TestActivity.this, true);
+	}
+
+
 
 	private void httpsRequest() {
 		String httpsUrl = "https://certs.cac.washington.edu/CAtest/";
@@ -137,13 +192,21 @@ public class TestActivity extends Activity {
 				Toast.makeText(TestActivity.this, "请求错误, errorCode:" + error.getErrorCode() + " msg:" + error.getMessage(),
 						1).show();
 			}
+
+			@Override
+			public void onComplete(String response) {
+				// TODO Auto-generated method stub
+				
+			}
 		});
 		HttpExecutor.execute(request, TestActivity.this, true, false);
 	}
 
 	private void jsonRequest() {
-		String jsonUrl = "http://m.weather.com.cn/data/101270101.html";
-		JsonRequest jsonRequest = new JsonRequest(jsonUrl, null, null, new Response.ResponseListener<JSONObject>() {
+		String jsonUrl = "http://www.weather.com.cn/data/sk/101010100.html";
+		JsonRequest jsonRequest = new JsonRequest(jsonUrl);
+		jsonRequest.requestMethod = RequestMethod.GET;
+		jsonRequest.setResponseListener(new Response.ResponseListener<JSONObject>() {
 			@Override
 			public void onSuccess(JSONObject response) {
 				Toast.makeText(TestActivity.this, response.toString(), 1).show();
@@ -152,6 +215,11 @@ public class TestActivity extends Activity {
 			@Override
 			public void onError(HError error) {
 				Toast.makeText(TestActivity.this, error.getErrorMsg(), 1).show();
+			}
+
+			@Override
+			public void onComplete(JSONObject response) {
+				
 			}
 		});
 		HttpExecutor.execute(jsonRequest, TestActivity.this, true);
@@ -235,6 +303,12 @@ public class TestActivity extends Activity {
 			public void onError(HError e) {
 				Toast.makeText(TestActivity.this, e.getErrorMsg(), Toast.LENGTH_LONG).show();
 			}
+
+			@Override
+			public void onComplete(String response) {
+				// TODO Auto-generated method stub
+				
+			}
 		});
 		request.requestMethod = RequestMethod.POST;
 		HttpExecutor.execute(request, this, true);
@@ -254,6 +328,12 @@ public class TestActivity extends Activity {
 			public void onError(HError e) {
 				Toast.makeText(TestActivity.this, e.toString(), Toast.LENGTH_LONG).show();
 			}
+
+			@Override
+			public void onComplete(TestPojo response) {
+				// TODO Auto-generated method stub
+				
+			}
 		}, TestPojo.class);
 		HttpExecutor.execute(request);
 	}
@@ -262,7 +342,19 @@ public class TestActivity extends Activity {
 
 	private void bitmapRequest() {
 		String jay = "http://pic4.nipic.com/20091008/2128360_084655191316_2.jpg";
-		loader.load(jay, image, R.drawable.android, R.drawable.error96);
+		loader.load(jay, new ImageLoadListener() {
+			
+			@Override
+			public void onSuccess(String imageUrl, Bitmap bitmap, LoadFrom from) {
+				if (bitmap != null)
+					image.setImageBitmap(bitmap);
+			}
+			
+			@Override
+			public void onError(HError error) {
+				image.setImageResource(R.drawable.error96);
+			}
+		});
 	}
 
 	@Override
@@ -286,6 +378,13 @@ public class TestActivity extends Activity {
 			if (downloadTask != null)
 				downloadTask.setCompleted(false);
 			break;
+		case 4:
+			Set<Thread> threads = Thread.getAllStackTraces().keySet();
+			for (Thread t : threads) {
+				Log.d("xxx", "thread:" + t.getName() + " id:" + t.getId());
+			}
+			Log.d("xxx", "num:" + Thread.getAllStackTraces().size());
+			break;
 		}
 		return super.onMenuItemSelected(featureId, item);
 	}
@@ -295,6 +394,7 @@ public class TestActivity extends Activity {
 		menu.add(Menu.NONE, 1, 1, "Clear Memory Cache");
 		menu.add(Menu.NONE, 2, 1, "Clear Disk Cache");
 		menu.add(Menu.NONE, 3, 1, "Clear Download File");
+		menu.add(Menu.NONE, 4, 1, "List Threads");
 		return super.onCreateOptionsMenu(menu);
 	}
 

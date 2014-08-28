@@ -27,6 +27,11 @@ public class BusinessModel {
 			public void onError(HError e) {
 				callback.onError(e);
 			}
+
+			@Override
+			public void onComplete(String response) {
+				
+			}
 		});
 		request.requestMethod = RequestMethod.GET;
 		HttpExecutor.execute(request, context, true);
