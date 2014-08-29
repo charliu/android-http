@@ -3,7 +3,7 @@ package com.vimc.android.mvc;
 import java.util.HashMap;
 import java.util.Map;
 
-import android.content.Context;
+import android.app.Activity;
 
 import com.vimc.ahttp.HError;
 import com.vimc.ahttp.HttpExecutor;
@@ -12,7 +12,7 @@ import com.vimc.ahttp.Request.RequestMethod;
 import com.vimc.ahttp.Response.ResponseListener;
 
 public class BusinessModel {
-	public void getSiChuanWeather(final BaseCallback<String> callback, Context context) {
+	public void getSiChuanWeather(final BaseCallback<String> callback, Activity context) {
 
 		String url = "http://www.webxml.com.cn/webservices/WeatherWebService.asmx/getSupportCity?name=hello&pwd=hell";
 		Map<String, String> map = new HashMap<String, String>();

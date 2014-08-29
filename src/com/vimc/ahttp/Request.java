@@ -28,16 +28,20 @@ import android.app.Dialog;
  * @param <T>
  */
 public abstract class Request<T> {
-
+	
+	private final String MULTIPART_CONTENT_TYPE = "multipart/form-data"; //传文件content_type
+	private final String BOUNDARY = UUID.randomUUID().toString(); //传文件请求实体分割符
+	
 	public static final int DEFAULT_SO_TIMEOUT = 40 * 1000; // 默认响应超时时间：40秒
-	public static final int DEFAULT_CONNECT_TIMEOUT = 10 * 1000; // 默认响应超时时间：40秒
+	public static final int DEFAULT_CONNECT_TIMEOUT = 10 * 1000; // 默认连接超时时间：10秒
 
 	protected String mUrl;
 	protected Map<String, String> mHeaders = new HashMap<String, String>(); // HTTP
 																			// 头部
 	protected Map<String, String> stringParams = new TreeMap<String, String>(); // HTTP
 																			// 参数
-	protected Map<String, File> fileParams = new HashMap<String, File>();
+	protected ArrayList<FileParameter> fileParams = new ArrayList<FileParameter>();
+	protected ArrayList<ByteParameter> byteParams = new ArrayList<ByteParameter>();
 	
 	protected ResponseListener<T> mResponseListener; // HTTP请求回调
 	public RequestMethod requestMethod = RequestMethod.POST; // Reuqest Method
@@ -49,6 +53,29 @@ public abstract class Request<T> {
 
 	public enum RequestMethod {
 		GET, POST, HEAD
+	}
+	
+	class ByteParameter {
+		public String paramName; //文件参数名
+		public String fileName;  //文件名
+		public byte[] data;      //byte数据
+		ByteParameter(String pName, String fName, byte[] data) {
+			this.paramName = pName;
+			this.fileName = fName;
+			this.data = data;
+		}
+	}
+	
+	class FileParameter {
+		public String paramName; //文件参数名
+		public String fileName;  //文件名
+		public File file;        //file文件
+		
+		FileParameter(String pName, String fName, File file) {
+			this.paramName = pName;
+			this.fileName = fName;
+			this.file = file;
+		}
 	}
 	
 	public Request(String url) {
@@ -109,34 +136,41 @@ public abstract class Request<T> {
 		return paramsEncoding;
 	}
 	
-	public Map<String, File> getFileParams() {
+	public ArrayList<FileParameter> getFileParams() {
 		return this.fileParams;
 	}
 	
-	public boolean containsBinaryData() {
-		return fileParams.size() > 0;
+	public ArrayList<ByteParameter> getByteParams() {
+		return this.byteParams;
 	}
 	
-	public void addFileParams(String name, File file) {
-		this.fileParams.put(name, file);
+	public boolean containsMutilpartData() {
+		return fileParams.size() > 0 || byteParams.size() > 0;
+	}
+	
+	public void addFileParam(String paramName, String fileName, File file) {
+		this.fileParams.add(new FileParameter(paramName, fileName, file));
+		this.requestMethod = RequestMethod.POST;
+	}
+	
+	public void addByteParam(String paramName, String fileName, byte[] data) {
+		this.byteParams.add(new ByteParameter(paramName, fileName, data));
+		this.requestMethod = RequestMethod.POST;
 	}
 
 	public void setParamsEncoding(String encoding) {
 		paramsEncoding = encoding;
 	}
 
-	private final String MULTIPART_CONTENT_TYPE = "multipart/form-data";
-	private final String BOUNDARY = UUID.randomUUID().toString();
-	
 	public String getBoundray() {
 		return BOUNDARY;
 	}
 	
 	public String getBodyContentType() {
-		if (fileParams.size() == 0) {
-			return "application/x-www-form-urlencoded; charset=" + getParamsEncoding();
-		} else {
+		if (containsMutilpartData()) {
 			return MULTIPART_CONTENT_TYPE + ";boundary=" + BOUNDARY;
+		} else {
+			return "application/x-www-form-urlencoded; charset=" + getParamsEncoding();
 		}
 	}
 
@@ -197,7 +231,7 @@ public abstract class Request<T> {
 	public byte[] getStringBody() {
 		Map<String, String> params = getStringParams();
 		if (params != null && params.size() > 0) {
-			return encodeParameters(params, getParamsEncoding());
+			return encodeStringParameters(params, getParamsEncoding());
 		}
 		return null;
 	}
@@ -225,7 +259,7 @@ public abstract class Request<T> {
 	 * @param paramsEncoding
 	 * @return
 	 */
-	private byte[] encodeParameters(Map<String, String> params, String paramsEncoding) {
+	private byte[] encodeStringParameters(Map<String, String> params, String paramsEncoding) {
 		StringBuilder encodedParams = new StringBuilder();
 		try {
 			for (Map.Entry<String, String> entry : params.entrySet()) {

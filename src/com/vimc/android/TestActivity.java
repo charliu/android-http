@@ -7,16 +7,16 @@ import java.util.Set;
 
 import org.json.JSONObject;
 
-import com.vimc.ahttp.ImageLoadListener;
-import com.vimc.ahttp.R;
 import com.vimc.ahttp.DownloadError;
-import com.vimc.ahttp.HError;
 import com.vimc.ahttp.FileDownloadTask;
 import com.vimc.ahttp.FileDownloader;
+import com.vimc.ahttp.HError;
 import com.vimc.ahttp.HttpExecutor;
+import com.vimc.ahttp.ImageLoadListener;
 import com.vimc.ahttp.ImageLoader;
 import com.vimc.ahttp.JsonRequest;
 import com.vimc.ahttp.PojoRequest;
+import com.vimc.ahttp.R;
 import com.vimc.ahttp.Response;
 import com.vimc.ahttp.StringRequest;
 import com.vimc.ahttp.FileDownloadTask.DownloadListener;
@@ -285,6 +285,11 @@ public class TestActivity extends Activity {
 				Toast.makeText(TestActivity.this,
 						"暂停下载\n临时文件：" + tempFilePath + "\n已下载:" + downloadedSize + "\n总大小：" + fileTotalSize, 1).show();
 
+			}
+
+			@Override
+			public void onCompleteInThread(File downloadedFile, FileFrom from) throws Throwable {
+				
 			}
 		});
 	}

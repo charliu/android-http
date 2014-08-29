@@ -1,6 +1,5 @@
 package com.vimc.ahttp;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
@@ -31,6 +30,7 @@ import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.content.ByteArrayBody;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -40,7 +40,8 @@ import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
 
-import android.util.Log;
+import com.vimc.ahttp.Request.ByteParameter;
+import com.vimc.ahttp.Request.FileParameter;
 
 /**
  * Use HttpClient execute an request, return HttpReqponse
@@ -80,6 +81,7 @@ public class HttpClientWorker implements HttpWorker {
 		}
 	}
 
+	@SuppressWarnings("rawtypes")
 	private HttpUriRequest createUriRequest(Request<?> request) throws UnsupportedEncodingException {
 		switch (request.requestMethod) {
 
@@ -87,19 +89,22 @@ public class HttpClientWorker implements HttpWorker {
 			return new HttpGet(request.getFullGetRequestUrl());
 		case POST:
 			HttpPost postRequest = new HttpPost(request.getUrl());
-			if (!request.containsBinaryData()) {
+			if (!request.containsMutilpartData()) {
 				postRequest.setEntity(request.getStringHttpEntity());
 			} else {
-				MultipartEntity entitys = new MultipartEntity();
+				MultipartEntity entity = new MultipartEntity();
 				Map<String, String> stringParams = request.getStringParams();
 				for (String key : stringParams.keySet()) {
-					entitys.addPart(key, new StringBody(stringParams.get(key), Charset.forName(request.getParamsEncoding())));
+					entity.addPart(key, new StringBody(stringParams.get(key), Charset.forName(request.getParamsEncoding())));
 				}
-				Map<String, File> fileParams = request.getFileParams();
-				for (String fileName : fileParams.keySet()) {
-					entitys.addPart(fileName, new FileBody(fileParams.get(fileName)));
+				for (FileParameter fileParameter : request.getFileParams()) {
+					entity.addPart(fileParameter.paramName, new FileBody(fileParameter.file, 
+							fileParameter.fileName, "multipart/form-data", request.getParamsEncoding()));
 				}
-				postRequest.setEntity(entitys);
+				for (ByteParameter byteParameter : request.getByteParams()) {
+					entity.addPart(byteParameter.paramName, new ByteArrayBody(byteParameter.data, byteParameter.fileName));
+				}
+				postRequest.setEntity(entity);
 			}
 
 			return postRequest;

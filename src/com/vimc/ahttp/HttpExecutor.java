@@ -4,6 +4,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -44,7 +45,7 @@ public class HttpExecutor {
 	 * @param showProgressBar
 	 *            是否显示加载对话框
 	 */
-	public static void execute(Request<?> request, Context context, boolean showProgressBar) {
+	public static void execute(Request<?> request, Activity context, boolean showProgressBar) {
 		request.dialog = createLoadingDialog(context, request, true);
 		HttpTask task = new HttpTask(request, mPoster, mHttpWorker);
 		if (showProgressBar) {
@@ -61,7 +62,7 @@ public class HttpExecutor {
 	 * @param showProgressBar
 	 *            是否显示加载对话框
 	 */
-	public static void execute(Request<?> request, Context context, boolean showProgressBar, boolean canAbort) {
+	public static void execute(Request<?> request, Activity context, boolean showProgressBar, boolean canAbort) {
 		request.dialog = createLoadingDialog(context, request, canAbort);
 		HttpTask task = new HttpTask(request, mPoster, mHttpWorker);
 		if (showProgressBar) {
@@ -70,7 +71,7 @@ public class HttpExecutor {
 		HTTP_THREAD_POOL_EXECUTOR.execute(task);
 	}
 
-	private static Dialog createLoadingDialog(Context context, final Request<?> request, final boolean canAbort) {
+	private static Dialog createLoadingDialog(Activity context, final Request<?> request, final boolean canAbort) {
 		Dialog dialog = new LoadingDialog(context);
 		dialog.setCanceledOnTouchOutside(false);
 		dialog.setCancelable(canAbort);

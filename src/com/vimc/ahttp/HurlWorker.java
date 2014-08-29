@@ -27,8 +27,10 @@ import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicHttpResponse;
 import org.apache.http.message.BasicStatusLine;
 
+import com.vimc.ahttp.Request.ByteParameter;
+import com.vimc.ahttp.Request.FileParameter;
+
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,6 +39,7 @@ import java.net.URL;
 import java.security.KeyStore;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -266,18 +269,23 @@ public class HurlWorker implements HttpWorker {
 		}
 	}
 
-	private void addBodyIfExists(HttpURLConnection connection, Request<?> request) throws IOException {
-		if (request.containsBinaryData()) {
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private void addBodyIfExists(HttpURLConnection connection, Request request) throws IOException {
+		if (request.containsMutilpartData()) {
 			connection.setDoOutput(true);
 			connection.addRequestProperty(HEADER_CONTENT_TYPE, request.getBodyContentType());
 			DataOutputStream out = new DataOutputStream(connection.getOutputStream());
+			
 			if (request.getStringParams().size() > 0) {
-				writeField(request.getStringParams(), out, request.getBoundray());
+				writeStringFields(request.getStringParams(), out, request.getBoundray());
 			}
-			Map<String, File> fileParams = request.getFileParams();
-			for (String fileName : fileParams.keySet()) {
-				writeFile(out, fileName, fileParams.get(fileName), request.getBoundray());
+			if (request.getFileParams().size() > 0) {
+				writeFiles(request.getFileParams(), out, request.getBoundray());
 			}
+			if (request.getByteParams().size() > 0) {
+				writeBytes(request.getByteParams(), out, request.getBoundray());
+			}
+			out.flush();
 			out.close();
 		} else {
 			byte[] body = request.getStringBody();
@@ -286,44 +294,74 @@ public class HurlWorker implements HttpWorker {
 				connection.addRequestProperty(HEADER_CONTENT_TYPE, request.getBodyContentType());
 				DataOutputStream out = new DataOutputStream(connection.getOutputStream());
 				out.write(body);
+				out.flush();
 				out.close();
 			}
 		}
 	}
 
-	String twoHyphens = "--", LINE_END = "\r\n";
-	String MULTIPART_FORM_DATA = "multipart/form-data";
-
-	private void writeField(Map<String, String> params, DataOutputStream output, String boundary) throws IOException {
+	String TWO_HYPHENS = "--", LINE_END = "\r\n";
+	
+	/**
+	 * write string parameters
+	 */
+	private void writeStringFields(Map<String, String> params, DataOutputStream output, String boundary) throws IOException {
 		StringBuilder sb = new StringBuilder();
-        for(String key : params.keySet()) {  
-            sb.append(twoHyphens + boundary + LINE_END);  
-            sb.append("Content-Disposition: form-data; name=\"" + key + "\"" + LINE_END);  
-            sb.append(LINE_END);  
-            sb.append(params.get(key) + LINE_END);  
-        }  
-        output.writeBytes(sb.toString());// 发送表单字段数据  
+		for (String key : params.keySet()) {
+			sb.append(TWO_HYPHENS + boundary + LINE_END);
+			sb.append("Content-Disposition: form-data; name=\"" + key + "\"" + LINE_END);
+			sb.append(LINE_END);
+			sb.append(params.get(key) + LINE_END);
+		}
+		output.writeBytes(sb.toString());// 发送表单字段数据
 	}
-	private void writeFile(DataOutputStream out, String keyName, File file, String boundary) throws IOException {
+
+	/**
+	 * write file parameters
+	 */
+	@SuppressWarnings("rawtypes")
+	private void writeFiles(ArrayList<FileParameter> fileParams, DataOutputStream out, String boundary) throws IOException {
+		for (FileParameter fileParameter : fileParams) {
+			writeDataStart(out, fileParameter.paramName, fileParameter.fileName, boundary);
+
+			InputStream is = new FileInputStream(fileParameter.file);
+			byte[] bytes = new byte[1024];
+			int len = 0;
+			while ((len = is.read(bytes)) != -1) {
+				out.write(bytes, 0, len);
+			}
+			is.close();
+			
+			writeDataEnd(out, boundary);
+		}
+	}
+	
+	/**
+	 * write byte[] parameters
+	 */
+	@SuppressWarnings("rawtypes")
+	private void writeBytes(ArrayList<ByteParameter> byteParams, DataOutputStream out, String boundary) throws IOException {
+		for (ByteParameter byteParameter : byteParams) {
+			writeDataStart(out, byteParameter.paramName, byteParameter.fileName, boundary);
+			out.write(byteParameter.data);
+			writeDataEnd(out, boundary);
+		}
+	}
+
+	private void writeDataStart(DataOutputStream out, String paramaName, String fileName, String boundary) throws IOException {
 		StringBuffer sb = new StringBuffer();
-		sb.append(twoHyphens);
+		sb.append(TWO_HYPHENS);
 		sb.append(boundary);
 		sb.append(LINE_END);
-
-		sb.append("Content-Disposition: form-data; name=\"" + keyName + "\"; filename=\"" + file.getName() + "\"" + LINE_END);
+		sb.append("Content-Disposition: form-data; name=\"" + paramaName + "\"; filename=\"" + fileName + "\"" + LINE_END);
 		sb.append("Content-Type: application/octet-stream; charset=" + "utf-8" + LINE_END);
 		sb.append(LINE_END);
 		out.write(sb.toString().getBytes());
-		InputStream is = new FileInputStream(file);
-		byte[] bytes = new byte[1024];
-		int len = 0;
-		while ((len = is.read(bytes)) != -1) {
-			out.write(bytes, 0, len);
-		}
-		is.close();
+	}
+	
+	private void writeDataEnd(DataOutputStream out, String boundary) throws IOException {
 		out.write(LINE_END.getBytes());
-		byte[] end_data = (twoHyphens + boundary + twoHyphens + LINE_END).getBytes();
+		byte[] end_data = (TWO_HYPHENS + boundary + TWO_HYPHENS + LINE_END).getBytes();
 		out.write(end_data);
-		out.flush();
 	}
 }

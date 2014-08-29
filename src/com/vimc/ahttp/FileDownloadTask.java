@@ -48,7 +48,7 @@ public class FileDownloadTask {
 	 * @param listener
 	 *            下载过程回调函数，可以为null
 	 */
-	FileDownloadTask(String url, String savePath, DownloadListener listener) {
+	public FileDownloadTask(String url, String savePath, DownloadListener listener) {
 		fileUrl = url;
 		fileSavePath = savePath;
 		httpWorker = HttpWorkerFactory.createHttpWorker();
@@ -72,10 +72,12 @@ public class FileDownloadTask {
 		void onStart(String fileUrl);
 
 		void onUpdateProgress(long currentSize, long totalSize, int percent);
-		
+
 		void onPause(String tempFilePath, long downloadedSize, long fileTotalSize);
 
 		void onComplete(File downloadedFile, FileFrom from);
+
+		void onCompleteInThread(File downloadedFile, FileFrom from) throws Throwable;
 
 		void onError(DownloadError error);
 	}
@@ -153,6 +155,11 @@ public class FileDownloadTask {
 		File existFile = checkFileExists();
 		if (existFile != null && existFile.exists()) {
 			HLog.i("File already download");
+			try {
+				downloadListener.onCompleteInThread(existFile, FileFrom.SDCARD);
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
 			postDonwloadSuccess(existFile, FileFrom.SDCARD);
 			return;
 		}
@@ -228,7 +235,12 @@ public class FileDownloadTask {
 				final File renameFile = createRenameFile(getSaveFileAbsolutePath(fileName));
 				if (downloadTempFile.renameTo(renameFile)) {
 					isCompleted = true;
-					HLog.d("Post download success");
+					HLog.d("Post download success in thread");
+					try {
+						downloadListener.onCompleteInThread(renameFile, FileFrom.INTERNET);
+					} catch (Throwable e) {
+						e.printStackTrace();
+					}
 					postDonwloadSuccess(renameFile, FileFrom.INTERNET);
 					return;
 				} else {
@@ -252,7 +264,6 @@ public class FileDownloadTask {
 			});
 		}
 	}
-	
 
 	/**
 	 * 重置size
@@ -441,19 +452,17 @@ public class FileDownloadTask {
 		}
 		return file;
 	}
-	
-	
-	private class FileRequest extends Request<File>{
 
-		
+	public class FileRequest extends Request<File> {
+
 		public FileRequest(String fileUrl) {
 			super(fileUrl, null, null, null);
 		}
-		
+
 		public FileRequest(String url, Map<String, String> header) {
 			super(url, header, null, null);
 		}
-		
+
 		@Override
 		public Response<File> parseResponse(NetworkResponse response) {
 			return null;

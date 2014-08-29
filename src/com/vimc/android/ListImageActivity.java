@@ -1,8 +1,8 @@
 package com.vimc.android;
 
 
-import com.vimc.ahttp.R;
 import com.vimc.ahttp.ImageLoader;
+import com.vimc.ahttp.R;
 
 import android.app.Activity;
 import android.os.Bundle;
