@@ -1,4 +1,4 @@
 android-http
 ============
 
-An light http framework on android.
+An light http framework for android.
